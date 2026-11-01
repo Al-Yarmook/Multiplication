@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة ملك جدول الضرب - لوحة الملوك </title>
+    <title>منصة فرسان جدول الضرب - لوحة الملوك </title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
@@ -48,10 +48,10 @@
 
     <div class="container">
         <div class="card">
-            <h2>👑 أبطال الصدارة العامة (جميع الألعاب مدمجة)</h2>
+            <h2>⚔️ أبطال الصدارة العامة (جميع الألعاب مدمجة)</h2>
             <table id="combinedTopTable">
                 <thead>
-                    <tr><th>المركز 👑</th><th>اسم الطالب</th><th>الصف</th><th>النقاط العظمى ⭐️</th></tr>
+                    <tr><th>المركز ⚔️</th><th>اسم الطالب</th><th>الصف</th><th>النقاط العظمى ⭐️</th></tr>
                 </thead>
                 <tbody><tr><td colspan="4">جاري تحميل أبطال الصدارة العامة...</td></tr></tbody>
             </table>
@@ -61,7 +61,7 @@
             <h2>🚀 أبطال صدارة "سباق صواريخ الفضاء"</h2>
             <table id="rocketTopTable">
                 <thead>
-                    <tr><th>المركز 👑</th><th>اسم الطالب</th><th>الصف</th><th>النقاط العظمى ⭐️</th></tr>
+                    <tr><th>المركز ⚔️</th><th>اسم الطالب</th><th>الصف</th><th>النقاط العظمى ⭐️</th></tr>
                 </thead>
                 <tbody><tr><td colspan="4">جاري التحميل...</td></tr></tbody>
             </table>
@@ -71,7 +71,7 @@
             <h2>⛏️ أبطال صدارة "لغز منجم الذهب"</h2>
             <table id="mineTopTable">
                 <thead>
-                    <tr><th>المركز 👑</th><th>اسم الطالب</th><th>الصف</th><th>النقاط العظمى ⭐️</th></tr>
+                    <tr><th>المركز ⚔️</th><th>اسم الطالب</th><th>الصف</th><th>النقاط العظمى ⭐️</th></tr>
                 </thead>
                 <tbody><tr><td colspan="4">جاري التحميل...</td></tr></tbody>
             </table>
@@ -81,7 +81,7 @@
             <h2>🧗‍♂️ أبطال صدارة "الصعود نحو القمة"</h2>
             <table id="mountainTopTable">
                 <thead>
-                    <tr><th>المركز 👑</th><th>اسم الطالب</th><th>الصف</th><th>النقاط العظمى ⭐️</th></tr>
+                    <tr><th>المركز ⚔️</th><th>اسم الطالب</th><th>الصف</th><th>النقاط العظمى ⭐️</th></tr>
                 </thead>
                 <tbody><tr><td colspan="4">جاري التحميل...</td></tr></tbody>
             </table>
@@ -153,7 +153,7 @@
                     if (studentsArr.length === 0) return;
                     let tableHTML = `<h3>${group.title}</h3><table><thead><tr><th>المركز ⭐️</th><th>اسم الطالب</th><th>الصف</th><th>عدد المحاولات 🔄</th></tr></thead><tbody>`;
                     studentsArr.slice(0, 10).forEach((st, idx) => {
-                        let rank = idx === 0 ? '👑 الأكثر تفاعلاً' : (idx + 1);
+                        let rank = idx === 0 ? '⚔️ الأكثر تفاعلاً' : (idx + 1);
                         tableHTML += `<tr><td><b>${rank}</b></td><td><b>${st.student_name}</b></td><td>${st.cls}</td><td><b style="color: #d81b60;">${st.count} مرات</b></td></tr>`;
                     });
                     container.innerHTML += tableHTML + `</tbody></table><br>`;
