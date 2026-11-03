@@ -50,12 +50,13 @@
             <button class="btn btn-red" onclick="logout()">تسجيل الخروج 🚪</button>
         </header>
 
-        <!-- شريط التبويبات الموحد -->
+        <!-- شريط التبويبات الموحد مع إضافة تبويب التقارير الشاملة -->
         <div class="nav-tabs" id="navTabs">
             <a href="adm_students.html" class="tab-btn role-admin-sup">👥 بيانات الطلاب</a>
             <a href="adm_teachers.html" class="tab-btn role-admin-sup">👨‍🏫 إدارة المعلمين</a>
             <a href="adm_games.html" class="tab-btn role-admin-sup">🎮 إعدادات الألعاب</a>
             <a href="adm_scores.html" class="tab-btn active">📊 درجات الطلاب</a>
+            <a href="adm_reports.html" class="tab-btn">📈 التقارير الشاملة</a>
             <a href="adm_reset.html" class="tab-btn admin-only-tab">⚙️ تصفير النتائج</a>
             <a href="adm_profile.html" class="tab-btn">👤 بياناتي الشخصية</a>
         </div>
@@ -69,6 +70,8 @@
                     <select id="gameFilter" onchange="loadScores()">
                         <option value="rocket">سباق صواريخ الفضاء</option>
                         <option value="goldmine">لغز منجم الذهب</option>
+                        <option value="mountain">الصعود نحو القمة</option>
+                        <option value="snake">الحية والسلم</option>
                     </select>
 
                     <label style="margin:0; font-weight:600; margin-right: 15px;">عرض:</label>
@@ -136,7 +139,12 @@
 
         async function loadScores() {
             const selectedGame = document.getElementById('gameFilter').value;
-            const tableName = selectedGame === 'goldmine' ? 'goldmine_scores' : 'rocket_scores';
+            
+            let tableName = 'rocket_scores';
+            if (selectedGame === 'goldmine') tableName = 'goldmine_scores';
+            else if (selectedGame === 'mountain') tableName = 'mountain_scores';
+            else if (selectedGame === 'snake') tableName = 'snake_scores';
+
             const limitVal = document.getElementById('viewLimitFilter').value;
 
             let query = supabaseClient.from(tableName).select('*').order('points', { ascending: false });
@@ -172,7 +180,7 @@
 
                     displayedCount++;
                     let scoreId = sc.id;
-                    let dateStr = sc.created_at ? new Date(sc.created_at).toLocaleString() : '-';
+                    let dateStr = sc.created_at ? new Date(sc.created_at).toLocaleString('ar-BH') : '-';
                     
                     let actionCell = isTeacher ? '' : `<td><button class="btn btn-red" style="padding: 4px 8px; font-size: 12px;" onclick="deleteSingleScore('${scoreId}', '${tableName}')">حذف 🗑️</button></td>`;
 
