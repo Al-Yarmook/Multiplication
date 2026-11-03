@@ -49,7 +49,7 @@
 <body>
 
     <div class="login-card">
-        <h2>👨‍🏫  المعلمين والإدارة</h2>
+        <h2>👨‍🏫 المعلمين والإدارة</h2>
         
         <!-- نموذج تسجيل الدخول الأساسي -->
         <div id="loginSection">
@@ -170,7 +170,7 @@
                     if (role === 'admin' || role === 'مدير' || role === 'supervisor' || role === 'مشرف') {
                         window.location.href = 'adm_scores.html';
                     } else {
-                        window.location.href = 'adm_scores.html'; // المعلم يوجه للدرجات والصفوف الخاصة به
+                        window.location.href = 'adm_scores.html';
                     }
                 } else {
                     alert('❌ كلمة المرور غير صحيحة!');
@@ -197,7 +197,6 @@
                 const { data, error } = await supabaseClient.from('staff').select('*');
                 if (error) throw error;
 
-                // البحث عن الحساب المطابق للاسم/الرقم والبريد الإلكتروني معاً
                 const targetStaff = data.find(st => {
                     const dbUser = String(st.username || '').trim().toLowerCase();
                     const dbCpr = String(st.cpr || '').trim();
@@ -212,7 +211,6 @@
                     return;
                 }
 
-                // تحديث كلمة المرور في جدول staff في السحابة
                 let query = supabaseClient.from('staff').update({ password: newPass });
                 if (targetStaff.cpr) {
                     query = query.eq('cpr', targetStaff.cpr);
