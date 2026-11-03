@@ -71,8 +71,8 @@
 
     <div class="container">
         <header>
-            <h1>📊 نظام التقارير الشاملة - منصة فرسان جدول الضرب</h1>
-            <a href="staff.html" class="btn btn-dark" style="padding: 6px 12px; font-size: 13px;">← العودة للوحة التحكم</a>
+            <h1 id="headerTitle">📊 نظام التقارير الشاملة - منصة فرسان جدول الضرب</h1>
+            <a href="adm_scores.html" class="btn btn-dark" style="padding: 6px 12px; font-size: 13px;">← العودة للوحة التحكم</a>
         </header>
 
         <!-- قسم إعدادات التقارير الافتراضية (للمدير فقط) -->
@@ -111,7 +111,7 @@
                 <div class="form-group">
                     <label>الفرقة / الشعبة (يمكن اختيار عدة فرق):</label>
                     <select id="filterSections" multiple style="height: 90px;">
-                        <!-- يتم تعبئتها ديناميكياً -->
+                        <!-- يتم تعبئتها ديناميكياً حسب صلاحيات المستخدم -->
                     </select>
                     <small style="color: #64748b; font-size: 11px;">اضغط مع الاستمرار على Ctrl لتحديد عدة فرق.</small>
                 </div>
@@ -174,7 +174,11 @@
 
     <script>
         let currentUser = null;
-        try { currentUser = JSON.parse(localStorage.getItem('current_user') || localStorage.getItem('current_staff')); } catch (e) {}
+        try { currentUser = JSON.parse(localStorage.getItem('current_staff_user')); } catch (e) {}
+
+        if (!currentUser) {
+            window.location.href = 'staff.html';
+        }
 
         const allSections = ['3ب1', '3ب2', '4ب1', '4ب2', '4ب3', '5ب1', '5ب2', '5ب3', '6ب1', '6ب2'];
 
@@ -184,8 +188,8 @@
         });
 
         function checkUserPermissions() {
-            const role = currentUser ? currentUser.role : 'admin';
-            if (role === 'admin' || role === 'manager') {
+            const role = currentUser ? String(currentUser.role || '').trim().toLowerCase() : 'admin';
+            if (role === 'admin' || role === 'مدير' || role === 'administrator') {
                 document.getElementById('adminSettingsCard').classList.remove('hidden');
             }
         }
@@ -195,16 +199,35 @@
             const selectEl = document.getElementById('filterSections');
             selectEl.innerHTML = '';
 
-            let filtered = allSections;
+            const roleVal = currentUser ? String(currentUser.role || '').trim().toLowerCase() : 'admin';
+            const isTeacher = (roleVal === 'teacher' || roleVal === 'معلم');
+            
+            // استخراج صفوف المعلم المسندة له في حسابه
+            let teacherClasses = (isTeacher && currentUser.classes) 
+                ? currentUser.classes.split(',').map(c => c.trim()) 
+                : [];
+
+            // إذا كان معلم وليس لديه صفوف مسندة
+            let availableSections = isTeacher ? teacherClasses : allSections;
+
+            let filtered = availableSections;
             if (gradeVal !== 'all') {
-                filtered = allSections.filter(s => s.startsWith(gradeVal));
+                filtered = availableSections.filter(s => s.startsWith(gradeVal));
+            }
+
+            if (filtered.length === 0) {
+                let opt = document.createElement('option');
+                opt.disabled = true;
+                opt.textContent = isTeacher ? 'لا توجد صفوف مسندة لحسابك في هذه المرحلة' : 'لا توجد شعب متاحة';
+                selectEl.appendChild(opt);
+                return;
             }
 
             filtered.forEach(sec => {
                 let opt = document.createElement('option');
                 opt.value = sec;
                 opt.textContent = `الشعبة: ${sec}`;
-                opt.selected = true;
+                opt.selected = true; // تحديد الكل افتراضياً
                 selectEl.appendChild(opt);
             });
         }
@@ -258,7 +281,6 @@
 
                 let studentsMap = {};
 
-                // إذا كان الخيار "جميع الطلاب"، نبدأ بملء القائمة من جدول الطلاب الأساسي
                 if (reportScope === 'all' && studentsDbData) {
                     studentsDbData.forEach(st => {
                         let name = st.name || st.student_name;
@@ -268,7 +290,6 @@
                     });
                 }
 
-                // دمج أو تعبئة درجات الألعاب لكل طالب
                 function processScores(data, gameKey) {
                     if (!data) return;
                     data.forEach(item => {
@@ -276,7 +297,6 @@
                         let cls = item.cls || 'غير مصنف';
                         let key = name + '_' + cls;
                         if (!studentsMap[key]) {
-                            // لو خيار "متفاعلين فقط" أو طالب غير مسجل بقاعدة الطلاب الأساسية
                             studentsMap[key] = { name, cls, rocket: 0, goldmine: 0, mountain: 0, snake: 0, total: 0 };
                         }
                         let pts = item.points || 0;
@@ -294,7 +314,6 @@
                     return s;
                 });
 
-                // ترتيب للترتيب العام
                 allStudents.sort((a, b) => b.total - a.total);
 
                 let htmlContent = '';
