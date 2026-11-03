@@ -44,12 +44,13 @@
             <button class="btn btn-red" onclick="logout()">تسجيل الخروج 🚪</button>
         </header>
 
-        <!-- شريط التبويبات الموحد -->
+        <!-- شريط التبويبات الموحد (تم إضافة تبويب التقارير الشاملة) -->
         <div class="nav-tabs" id="navTabs">
             <a href="adm_students.html" class="tab-btn role-admin-sup">👥 بيانات الطلاب</a>
             <a href="adm_teachers.html" class="tab-btn role-admin-sup">👨‍🏫 إدارة المعلمين</a>
             <a href="adm_games.html" class="tab-btn role-admin-sup">🎮 إعدادات الألعاب</a>
             <a href="adm_scores.html" class="tab-btn role-admin-sup-teacher">📊 درجات الطلاب</a>
+            <a href="adm_reports.html" class="tab-btn">📈 التقارير الشاملة</a>
             <a href="adm_reset.html" class="tab-btn admin-only-tab">⚙️ تصفير النتائج</a>
             <a href="adm_profile.html" class="tab-btn active">👤 بياناتي الشخصية</a>
         </div>
@@ -98,7 +99,7 @@
             const roleName = (roleVal === 'admin' || roleVal === 'مدير') ? 'مدير النظام' : (roleVal === 'supervisor' || roleVal === 'مشرف') ? 'مشرف' : 'معلم';
             document.getElementById('welcomeTitle').textContent = `بياناتي الشخصية (${currentUser.name || 'مستخدم'} - ${roleName})`;
 
-            // إذا كان المستخدم معلماً أو مشرفاً، يتم إخفاء التبويبات غير المخصصة له
+            // إذا كان المستخدم معلماً، يتم إخفاء تبويبات الإدارة غير المخصصة له
             if(roleVal === 'teacher' || roleVal === 'معلم') {
                 document.querySelectorAll('.role-admin-sup').forEach(el => el.classList.add('hidden'));
                 document.querySelectorAll('.admin-only-tab').forEach(el => el.classList.add('hidden'));
