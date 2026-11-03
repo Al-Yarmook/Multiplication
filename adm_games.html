@@ -92,10 +92,10 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group" style="flex: 2;">
-                        <label>أنواع الأسئلة المعتمدة:</label>
+                        <label>أنواع الأسئلة المعتمدة في اللعبة:</label>
                         <div class="checkbox-group">
-                            <label class="checkbox-item"><input type="checkbox" id="chkRocketProd" checked> إيجاد الناتج</label>
-                            <label class="checkbox-item"><input type="checkbox" id="chkRocketMiss" checked> إيجاد العامل المفقود</label>
+                            <label class="checkbox-item"><input type="checkbox" id="chkRocketProd" checked> إيجاد الناتج (مثال: 5 × 4 = ؟)</label>
+                            <label class="checkbox-item"><input type="checkbox" id="chkRocketMiss" checked> إيجاد العامل المفقود (مثال: ؟ × 4 = 20)</label>
                         </div>
                     </div>
                 </div>
@@ -112,7 +112,7 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group" style="flex: 2;">
-                        <label>أنواع الأسئلة المعتمدة:</label>
+                        <label>أنواع الأسئلة المعتمدة في اللعبة:</label>
                         <div class="checkbox-group">
                             <label class="checkbox-item"><input type="checkbox" id="chkProduct" checked> إيجاد الناتج</label>
                             <label class="checkbox-item"><input type="checkbox" id="chkMissing" checked> إيجاد العامل المفقود</label>
@@ -132,7 +132,7 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group" style="flex: 2;">
-                        <label>أنواع الأسئلة المعتمدة:</label>
+                        <label>أنواع الأسئلة المعتمدة في اللعبة:</label>
                         <div class="checkbox-group">
                             <label class="checkbox-item"><input type="checkbox" id="chkMountProd" checked> إيجاد الناتج</label>
                             <label class="checkbox-item"><input type="checkbox" id="chkMountMiss" checked> إيجاد العامل المفقود</label>
@@ -142,7 +142,7 @@
                 <button class="btn" onclick="saveMountainSettings()">حفظ إعدادات القمة 💾</button>
             </div>
 
-            <!-- 5. إعدادات لعبة الحية والدرج الجديدة -->
+            <!-- 5. إعدادات لعبة الحية والدرج -->
             <div class="game-sub-section">
                 <h3>🐍 إعدادات لعبة "الحية والدرج"</h3>
                 <div class="form-row">
@@ -285,6 +285,10 @@
         async function saveRocketSettings() {
             const isProd = document.getElementById('chkRocketProd').checked;
             const isMiss = document.getElementById('chkRocketMiss').checked;
+            if(!isProd && !isMiss) {
+                alert('⚠️ يرجى اختيار نوع واحد على الأقل من أنواع الأسئلة للصواريخ.');
+                return;
+            }
             let qTypeStr = 'both';
             if(isProd && !isMiss) qTypeStr = 'product';
             if(!isProd && isMiss) qTypeStr = 'missing';
@@ -305,6 +309,10 @@
         async function saveGoldMineSettings() {
             const isProd = document.getElementById('chkProduct').checked;
             const isMiss = document.getElementById('chkMissing').checked;
+            if(!isProd && !isMiss) {
+                alert('⚠️ يرجى اختيار نوع واحد على الأقل من أنواع الأسئلة للمنجم.');
+                return;
+            }
             let qTypeStr = 'both';
             if(isProd && !isMiss) qTypeStr = 'product';
             if(!isProd && isMiss) qTypeStr = 'missing';
@@ -323,6 +331,10 @@
         async function saveMountainSettings() {
             const isProd = document.getElementById('chkMountProd').checked;
             const isMiss = document.getElementById('chkMountMiss').checked;
+            if(!isProd && !isMiss) {
+                alert('⚠️ يرجى اختيار نوع واحد على الأقل من أنواع الأسئلة للقمة.');
+                return;
+            }
             let qTypeStr = 'both';
             if(isProd && !isMiss) qTypeStr = 'product';
             if(!isProd && isMiss) qTypeStr = 'missing';
@@ -342,7 +354,7 @@
             const isProd = document.getElementById('chkSnakeProd').checked;
             const isMiss = document.getElementById('chkSnakeMiss').checked;
             if(!isProd && !isMiss) {
-                alert('⚠️ يرجى اختيار نوع واحد على الأقل من الأسئلة.');
+                alert('⚠️ يرجى اختيار نوع واحد على الأقل من الأسئلة للحية والدرج.');
                 return;
             }
             let qTypeStr = 'both';
