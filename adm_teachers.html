@@ -32,12 +32,9 @@
         .form-group { display: flex; flex-direction: column; gap: 5px; }
         label { font-weight: bold; font-size: 13px; color: #333; }
         input, select { padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: 'Cairo'; font-size: 14px; }
-        
-        .classes-checkbox-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; max-height: 150px; overflow-y: auto; }
-        .class-check-label { display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: bold; cursor: pointer; background: white; padding: 5px 10px; border-radius: 6px; border: 1px solid #cbd5e1; }
 
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: center; font-size: 13px; }
+        th, td { border: 1px solid #e2e8f0; padding: 12px; text-align: center; font-size: 14px; }
         th { background: var(--primary); color: white; font-weight: bold; }
         
         .btn { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; font-family: 'Cairo'; transition: 0.3s; text-decoration: none; display: inline-block; }
@@ -69,7 +66,7 @@
             <a href="adm_profile.html" class="tab-btn">👤 بياناتي الشخصية</a>
         </div>
 
-        <!-- لوحة الإدخال القابلة للطي (تصغير وتكبير) -->
+        <!-- لوحة إضافة معلم / مشرف جديد (قابلة للطي) -->
         <div class="section-card">
             <div class="collapse-header" onclick="toggleCollapse()">
                 <h2 id="formTitle">➕ إضافة معلم / مشرف جديد</h2>
@@ -109,21 +106,36 @@
                     </div>
                 </div>
 
-                <div class="form-group" style="margin-top: 15px;">
-                    <label>تخصيص الصفوف والفرقة الدراسية (الصلاحيات الإشرافية والتدريسية):</label>
-                    <div class="classes-checkbox-container" id="classesCheckboxes">
-                        <!-- يتم استدعاء جميع فرق المدرسة ديناميكياً هنا -->
-                    </div>
-                </div>
-
                 <div style="margin-top: 20px; display: flex; gap: 10px;">
-                    <button class="btn btn-green" onclick="saveStaff()">حفظ البيانات ✓</button>
+                    <button class="btn btn-green" onclick="saveStaff()">حفظ المعلم ✓</button>
                     <button class="btn btn-blue hidden" id="cancelEditBtn" onclick="resetForm()">إلغاء التعديل ✕</button>
                 </div>
             </div>
         </div>
 
-        <!-- جدول عرض المعلمين والمشرفين -->
+        <!-- جدول توزيع المعلمين على فرق المدرسة المستدعاة من جدول الطلاب -->
+        <div class="section-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
+                <h2 style="margin:0;">🏫 توزيع المعلمين على فرق المدرسة</h2>
+                <button class="btn btn-green" onclick="saveAllClassAssignments()">💾 حفظ توزيع المعلمين على الصفوف</button>
+            </div>
+            <p style="color: #64748b; font-size: 13px; margin-bottom: 15px;">اختر المعلم المناسب لكل فرقة دراسية مستدعة من سجلات الطلاب، ثم اضغط زر الحفظ في الأعلى.</p>
+            
+            <table id="classTeachersTable">
+                <thead>
+                    <tr>
+                        <th>الفرقة / الصف الدراسية</th>
+                        <th>عدد الطلاب المسجلين</th>
+                        <th>المعلم المسند للفرقة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="3" style="text-align:center;">جاري جلب الفرق والطلاب من السحابة...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- جدول عرض المعلمين والمشرفين المسجلين -->
         <div class="section-card">
             <h2>قائمة المعلمين والمشرفين المسجلين 📋</h2>
             <table id="staffTable">
@@ -134,7 +146,6 @@
                         <th>الرقم الشخصي</th>
                         <th>البريد الإلكتروني</th>
                         <th>الصلاحية</th>
-                        <th>الصفوف المسندة</th>
                         <th>الإجراءات</th>
                     </tr>
                 </thead>
@@ -151,15 +162,12 @@
         let currentUser = JSON.parse(localStorage.getItem('current_staff_user'));
         if(!currentUser) { window.location.href = 'staff.html'; }
 
-        // جميع فرق المدرسة الافتراضية أو المسحوبة من قاعدة البيانات
-        const schoolSections = ['3ب1', '3ب2', '4ب1', '4ب2', '4ب3', '5ب1', '5ب2', '5ب3', '6ب1', '6ب2'];
+        let allStaffList = [];
 
         document.addEventListener('DOMContentLoaded', () => {
-            renderClassesCheckboxes();
-            loadStaffList();
+            loadStaffAndClassesData();
         });
 
-        // دالة تصغير وتكبير اللوحة
         function toggleCollapse() {
             const content = document.getElementById('collapseContent');
             const icon = document.getElementById('collapseIcon');
@@ -172,30 +180,86 @@
             }
         }
 
-        // توليد مربعات الاختيار لجميع فرق المدرسة
-        function renderClassesCheckboxes() {
-            const container = document.getElementById('classesCheckboxes');
-            container.innerHTML = '';
-            schoolSections.forEach(sec => {
-                container.innerHTML += `
-                    <label class="class-check-label">
-                        <input type="checkbox" name="teacherClass" value="${sec}"> فرقة ${sec}
-                    </label>
-                `;
-            });
+        // جلب المعلمين، وتحديد الفرق من جدول الطلاب، وجلب تعيينات السحابة
+        async function loadStaffAndClassesData() {
+            try {
+                // 1. جلب المعلمين والمشرفين
+                const staffRes = await supabaseClient.from('staff').select('*');
+                allStaffList = staffRes.data || [];
+
+                // 2. جلب جميع الطلاب لاستخراج الفرق (الشعب) الفريدة
+                const studentsRes = await supabaseClient.from('students').select('cls');
+                let sectionsMap = {};
+                if (studentsRes.data) {
+                    studentsRes.data.forEach(st => {
+                        let c = st.cls ? String(st.cls).trim() : '';
+                        if (c) {
+                            sectionsMap[c] = (sectionsMap[c] || 0) + 1;
+                        }
+                    });
+                }
+
+                let sortedSections = Object.keys(sectionsMap).sort();
+                if (sortedSections.length === 0) {
+                    sortedSections = ['3ب1', '3ب2', '4ب1', '4ب2', '5ب1', '5ب2', '6ب1', '6ب2'];
+                }
+
+                // 3. جلب التعيينات المخزنة في جدول class_teachers في السحابة
+                const assignmentsRes = await supabaseClient.from('class_teachers').select('*');
+                let assignedMap = {};
+                if (assignmentsRes.data) {
+                    assignmentsRes.data.forEach(item => {
+                        assignedMap[item.cls] = item.teacher_name; // أو معرف المعلم
+                    });
+                }
+
+                // تعبئة جدول توزيع المعلمين على الصفوف
+                const tbody = document.querySelector('#classTeachersTable tbody');
+                tbody.innerHTML = '';
+
+                sortedSections.forEach(sec => {
+                    let studentCount = sectionsMap[sec] || 0;
+                    let currentAssignedTeacher = assignedMap[sec] || '';
+
+                    // بناء القائمة المنسدلة للمعلمين والمشرفين
+                    let optionsHtml = `<option value="">-- اختر المعلم --</option>`;
+                    allStaffList.forEach(st => {
+                        let selected = (st.name === currentAssignedTeacher) ? 'selected' : '';
+                        optionsHtml += `<option value="${st.name}" ${selected}>${st.name} (${st.role || 'Teacher'})</option>`;
+                    });
+
+                    tbody.innerHTML += `
+                        <tr data-class="${sec}">
+                            <td><b>الفرقة ${sec}</b></td>
+                            <td>${studentCount} طالب</td>
+                            <td>
+                                <select class="teacher-select" style="width: 100%; max-width: 300px; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;">
+                                    ${optionsHtml}
+                                </select>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                // تعبئة جدول المعلمين المسجلين بالأسفل
+                loadStaffTableUI();
+
+            } catch (err) {
+                console.error("Error loading data:", err);
+                alert('حدث خطأ أثناء جلب البيانات من السحابة.');
+            }
         }
 
-        async function loadStaffList() {
-            const { data, error } = await supabaseClient.from('staff').select('*');
+        function loadStaffTableUI() {
             const tbody = document.querySelector('#staffTable tbody');
             tbody.innerHTML = '';
 
-            if (error || !data || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="color:red;">لا توجد بيانات مسجلة للمعلمين.</td></tr>`;
+            if (allStaffList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="color:red;">لا توجد بيانات مسجلة للمعلمين.</td></tr>`;
                 return;
             }
 
-            data.forEach(st => {
+            allStaffList.forEach(st => {
                 tbody.innerHTML += `
                     <tr>
                         <td><b>${st.name || ''}</b></td>
@@ -203,7 +267,6 @@
                         <td>${st.cpr || ''}</td>
                         <td>${st.email || ''}</td>
                         <td><span style="background:#e0f2fe; color:#0369a1; padding:3px 8px; border-radius:4px; font-weight:bold;">${st.role || 'Teacher'}</span></td>
-                        <td>${st.classes || 'غير مسند'}</td>
                         <td>
                             <button class="btn btn-blue" style="padding:4px 8px; font-size:12px;" onclick='editStaff(${JSON.stringify(st)})'>تعديل ✍️</button>
                             <button class="btn btn-red" style="padding:4px 8px; font-size:12px;" onclick="deleteStaff('${st.id || st.cpr}')">حذف 🗑️</button>
@@ -211,6 +274,49 @@
                     </tr>
                 `;
             });
+        }
+
+        // زر الحفظ الموحد لتوزيع جميع المعلمين على الصفوف ومزامنتها في جدول class_teachers وصلاحيات staff
+        async function saveAllClassAssignments() {
+            const rows = document.querySelectorAll('#classTeachersTable tbody tr');
+            let upsertData = [];
+            let teacherClassesMap = {}; // لجمع صفوف كل معلم لتحديث جدول staff للصلاحيات
+
+            rows.forEach(row => {
+                let cls = row.getAttribute('data-class');
+                let teacherName = row.querySelector('.teacher-select').value;
+                
+                if (cls) {
+                    upsertData.push({ cls: cls, teacher_name: teacherName });
+                    if (teacherName) {
+                        if (!teacherClassesMap[teacherName]) teacherClassesMap[teacherName] = [];
+                        teacherClassesMap[teacherName].push(cls);
+                    }
+                }
+            });
+
+            try {
+                // 1. مسح وإعادة إدخال أو تحديث جدول class_teachers في السحابة
+                // ملاحظة: تأكد من إنشاء جدول class_teachers في سحابة Supabase بأعمدة (cls, teacher_name) وجعل cls كـ Primary Key
+                for (let item of upsertData) {
+                    await supabaseClient.from('class_teachers').upsert(item, { onConflict: 'cls' });
+                }
+
+                // 2. تحديث حقل classes في جدول staff تلقائياً لكل معلم لتعمل الصلاحيات في صفحة الدرجات والتقارير
+                for (let teacherObj of allStaffList) {
+                    let assignedClassesArr = teacherClassesMap[teacherObj.name] || [];
+                    let classesStr = assignedClassesArr.join(', ');
+                    
+                    await supabaseClient.from('staff').update({ classes: classesStr }).eq('id', teacherObj.id || teacherObj.cpr);
+                }
+
+                alert('✅ تم حفظ وتحديث توزيع المعلمين على الصفوف والصلاحيات بنجاح!');
+                loadStaffAndClassesData();
+
+            } catch (err) {
+                console.error("Save Assignment Error:", err);
+                alert('حدث خطأ أثناء حفظ التوزيع في السحابة: ' + err.message);
+            }
         }
 
         async function saveStaff() {
@@ -222,15 +328,12 @@
             const password = document.getElementById('staffPassword').value.trim();
             const role = document.getElementById('staffRole').value;
 
-            // جمع الصفوف المحددة
-            const selectedClasses = Array.from(document.querySelectorAll('input[name="teacherClass"]:checked')).map(cb => cb.value).join(', ');
-
             if (!name || !username || !password) {
                 alert('الرجاء إدخال الاسم، اسم المستخدم، وكلمة المرور على الأقل!');
                 return;
             }
 
-            let staffData = { name, username, cpr, email, password, role, classes: selectedClasses };
+            let staffData = { name, username, cpr, email, password, role };
 
             let query;
             if (id) {
@@ -243,9 +346,9 @@
             if (error) {
                 alert('خطأ أثناء الحفظ: ' + error.message);
             } else {
-                alert('✅ تم حفظ بيانات المعلم والصلاحيات بنجاح!');
+                alert('✅ تم حفظ بيانات المعلم بنجاح!');
                 resetForm();
-                loadStaffList();
+                loadStaffAndClassesData();
             }
         }
 
@@ -258,16 +361,9 @@
             document.getElementById('staffPassword').value = st.password || '';
             document.getElementById('staffRole').value = st.role || 'Teacher';
 
-            // تحديد مربعات الصفوف المسندة له مسبقاً
-            const assignedClasses = st.classes ? st.classes.split(',').map(c => c.trim()) : [];
-            document.querySelectorAll('input[name="teacherClass"]').forEach(cb => {
-                cb.checked = assignedClasses.includes(cb.value);
-            });
-
-            document.getElementById('formTitle').textContent = '✏️ تعديل بيانات المعلم والصلاحيات';
+            document.getElementById('formTitle').textContent = '✏️ تعديل بيانات المعلم';
             document.getElementById('cancelEditBtn').classList.remove('hidden');
             
-            // فتح اللوحة تلقائياً عند النقر على تعديل
             document.getElementById('collapseContent').style.display = 'block';
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -280,7 +376,6 @@
             document.getElementById('staffEmail').value = '';
             document.getElementById('staffPassword').value = '';
             document.getElementById('staffRole').value = 'Teacher';
-            document.querySelectorAll('input[name="teacherClass"]').forEach(cb => cb.checked = false);
             document.getElementById('formTitle').textContent = '➕ إضافة معلم / مشرف جديد';
             document.getElementById('cancelEditBtn').classList.add('hidden');
         }
@@ -289,11 +384,10 @@
             if (!confirm('هل أنت متأكد من حذف هذا المعلم نهائياً؟')) return;
             const { error } = await supabaseClient.from('staff').delete().eq('id', id);
             if (error) {
-                // محاولة الحذف بالـ cpr لو لم يتوفر حقل id
                 await supabaseClient.from('staff').delete().eq('cpr', id);
             }
             alert('✅ تم الحذف بنجاح!');
-            loadStaffList();
+            loadStaffAndClassesData();
         }
 
         function logout() {
