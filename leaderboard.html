@@ -3,112 +3,227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة فرسان جدول الضرب - لوحة الفرسان </title>
+    <title>منصة فرسان جدول الضرب - لوحة الفرسان</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #d81b60;
+            --primary-hover: #ad1457;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
-        body { background-color: #f4f7f6; color: #333; min-height: 100vh; display: flex; flex-direction: column; }
         
-        header { background: white; padding: 25px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        header h1 { color: #d81b60; font-size: 26px; }
+        body { 
+            background-color: var(--bg); 
+            color: var(--text); 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 90px 15px 75px 15px; 
+        }
+        
+        /* تثبيت الهيدر في الأعلى مع جعله رابطاً للرئيسية */
+        header { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            background: white; 
+            padding: 15px 20px; 
+            text-align: center; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); 
+            border-bottom: 5px solid var(--primary); 
+            z-index: 1000; 
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        header:hover { background: #fff0f5; }
+        header h1 { color: var(--primary); font-size: 22px; font-weight: 900; }
 
-        .container { max-width: 1000px; margin: 25px auto; padding: 20px; flex: 1; width: 100%; }
-        .card { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid #e0e0e0; }
+        .container { max-width: 1100px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 25px; }
         
-        h2 { color: #d81b60; margin-bottom: 15px; text-align: center; font-size: 20px; }
-        h3 { color: #1565c0; margin: 20px 0 10px 0; font-size: 17px; border-bottom: 2px solid #e0e0e0; padding-bottom: 8px; }
+        /* تنسيق اللوحات الفاخرة بدلاً من الجداول التقليدية */
+        .board-card { 
+            background: white; 
+            border-radius: 16px; 
+            padding: 22px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05); 
+            border: 2px solid #e2e8f0; 
+        }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; text-align: center; }
-        th, td { padding: 12px; border: 1px solid #e0e0e0; font-size: 14px; }
-        th { background: #d81b60; color: white; }
-        tr:hover { background: #fdf2f8; }
+        .board-title { color: var(--primary); margin-bottom: 15px; text-align: center; font-size: 20px; font-weight: 900; display: flex; align-items: center; justify-content: center; gap: 8px; }
         
-        .back-link { display: inline-block; margin-top: 15px; color: #d81b60; text-decoration: none; font-weight: bold; }
+        /* تصميم الصفوف كلوحات متناسقة */
+        .rank-list { display: flex; flex-direction: column; gap: 8px; }
+        .rank-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 10px 15px; 
+            background: #f8fafc; 
+            border-radius: 10px; 
+            border: 1px solid #e2e8f0; 
+            font-size: 14px; 
+            transition: 0.2s; 
+        }
+        .rank-item:hover { background: #fdf2f8; border-color: #fbcfe8; transform: scale(1.01); }
+        .rank-item.top-1 { background: #fef3c7; border-color: #fde68a; font-weight: bold; }
+        .rank-item.top-2 { background: #f1f5f9; border-color: #cbd5e1; font-weight: bold; }
+        .rank-item.top-3 { background: #ffedd5; border-color: #fed7aa; font-weight: bold; }
+
+        .more-btn { 
+            background: transparent; 
+            border: 2px dashed var(--primary); 
+            color: var(--primary); 
+            width: 100%; 
+            padding: 8px; 
+            border-radius: 10px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            margin-top: 10px; 
+            font-family: 'Cairo'; 
+            transition: 0.2s; 
+        }
+        .more-btn:hover { background: var(--primary); color: white; border-style: solid; }
+
+        /* شبكة أفقية لجداول الأكثر تفاعلاً حسب الصفوف */
+        .active-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+            gap: 15px; 
+        }
+        .mini-board { 
+            background: #ffffff; 
+            border: 2px solid #cbd5e1; 
+            border-radius: 12px; 
+            padding: 15px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03); 
+        }
+        .mini-board h3 { color: #1565c0; font-size: 15px; margin-bottom: 10px; text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; }
+
+        .back-container { text-align: center; margin-top: 10px; }
+        .back-link { display: inline-block; color: var(--primary); text-decoration: none; font-weight: bold; font-size: 15px; }
         .back-link:hover { text-decoration: underline; }
 
+        /* تثبيت التذييل في الأسفل */
         footer.author-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
             text-align: center;
-            padding: 15px;
-            font-size: 14px;
+            padding: 12px;
+            font-size: 13px;
             color: #475569;
             border-top: 1px solid #e2e8f0;
             background: #ffffff;
             font-weight: bold;
-            box-shadow: 0 -4px 15px rgba(0,0,0,0.05);
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
         }
+
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>🏆 لوحة الفرسان (أبطال جدول الضرب)</h1>
+    <!-- الهيدر الثابت (عند الضغط عليه ينتقل للصفحة الرئيسية) -->
+    <header onclick="window.location.href='index.html'" title="انقر للعودة للرئيسية">
+        <h1>🏆 لوحة الفرسان (أبطال جدول الضرب) - انقر هنا للرئيسية 🏠</h1>
     </header>
 
     <div class="container">
-        <div class="card">
-            <h2>⚔️ أبطال الصدارة العامة (جميع الألعاب مدمجة)</h2>
-            <table id="combinedTopTable">
-                <thead>
-                    <tr><th>المركز ⚔️</th><th>اسم الطالب</th><th>الصف</th><th>النقاط العظمى ⭐️</th></tr>
-                </thead>
-                <tbody><tr><td colspan="4">جاري تحميل أبطال الصدارة العامة...</td></tr></tbody>
-            </table>
-        </div>
-
-        <div class="card">
-            <h2>🚀 أبطال صدارة "سباق صواريخ الفضاء"</h2>
-            <table id="rocketTopTable">
-                <thead>
-                    <tr><th>المركز ⚔️</th><th>اسم الطالب</th><th>الصف</th><th>النقاط العظمى ⭐️</th></tr>
-                </thead>
-                <tbody><tr><td colspan="4">جاري التحميل...</td></tr></tbody>
-            </table>
-        </div>
-
-        <div class="card">
-            <h2>⛏️ أبطال صدارة "لغز منجم الذهب"</h2>
-            <table id="mineTopTable">
-                <thead>
-                    <tr><th>المركز ⚔️</th><th>اسم الطالب</th><th>الصف</th><th>النقاط العظمى ⭐️</th></tr>
-                </thead>
-                <tbody><tr><td colspan="4">جاري التحميل...</td></tr></tbody>
-            </table>
-        </div>
-
-        <div class="card">
-            <h2>🧗‍♂️ أبطال صدارة "الصعود نحو القمة"</h2>
-            <table id="mountainTopTable">
-                <thead>
-                    <tr><th>المركز ⚔️</th><th>اسم الطالب</th><th>الصف</th><th>النقاط العظمى ⭐️</th></tr>
-                </thead>
-                <tbody><tr><td colspan="4">جاري التحميل...</td></tr></tbody>
-            </table>
-        </div>
-
-        <div class="card">
-            <h2>🔥 لوحة الأكثر تفاعلاً ونشاطاً (حسب الصفوف)</h2>
-            <div id="activeTablesContainer"><p style="text-align: center; color: #666;">جاري تحليل الأنشطة...</p></div>
-            <div style="text-align: center; margin-top: 20px;">
-                <a href="index.html" class="back-link">← العودة للرئيسية</a>
+        <!-- الصدارة العامة -->
+        <div class="board-card">
+            <div class="board-title">⚔️ أبطال الصدارة العامة (جميع الألعاب مدمجة)</div>
+            <div class="rank-list" id="combinedList">
+                <div style="text-align:center; color:#666;">جاري تحميل أبطال الصدارة العامة...</div>
             </div>
+            <button class="more-btn hidden" id="moreCombined" onclick="toggleMore('combined')">عرض المزيد 👇</button>
+        </div>
+
+        <!-- صواريخ الفضاء -->
+        <div class="board-card">
+            <div class="board-title">🚀 أبطال صدارة "سباق صواريخ الفضاء"</div>
+            <div class="rank-list" id="rocketList">
+                <div style="text-align:center; color:#666;">جاري التحميل...</div>
+            </div>
+            <button class="more-btn hidden" id="moreRocket" onclick="toggleMore('rocket')">عرض المزيد 👇</button>
+        </div>
+
+        <!-- منجم الذهب -->
+        <div class="board-card">
+            <div class="board-title">⛏️ أبطال صدارة "لغز منجم الذهب"</div>
+            <div class="rank-list" id="mineList">
+                <div style="text-align:center; color:#666;">جاري التحميل...</div>
+            </div>
+            <button class="more-btn hidden" id="moreMine" onclick="toggleMore('mine')">عرض المزيد 👇</button>
+        </div>
+
+        <!-- الصعود نحو القمة -->
+        <div class="board-card">
+            <div class="board-title">🧗‍♂️ أبطال صدارة "الصعود نحو القمة"</div>
+            <div class="rank-list" id="mountainList">
+                <div style="text-align:center; color:#666;">جاري التحميل...</div>
+            </div>
+            <button class="more-btn hidden" id="moreMountain" onclick="toggleMore('mountain')">عرض المزيد 👇</button>
+        </div>
+
+        <!-- الحية والدرج -->
+        <div class="board-card">
+            <div class="board-title">🐍 أبطال صدارة "الحية والدرج الرياضية"</div>
+            <div class="rank-list" id="snakeList">
+                <div style="text-align:center; color:#666;">جاري التحميل...</div>
+            </div>
+            <button class="more-btn hidden" id="moreSnake" onclick="toggleMore('snake')">عرض المزيد 👇</button>
+        </div>
+
+        <!-- الأكثر تفاعلاً (بشكل أفقي متناسق) -->
+        <div class="board-card">
+            <div class="board-title">🔥 لوحة الأكثر تفاعلاً ونشاطاً (حسب الصفوف)</div>
+            <div class="active-grid" id="activeGridsContainer">
+                <p style="text-align: center; color: #666; grid-column: 1/-1;">جاري تحليل الأنشطة...</p>
+            </div>
+        </div>
+
+        <div class="back-container">
+            <a href="index.html" class="back-link">← العودة للرئيسية</a>
         </div>
     </div>
 
+    <!-- التذييل الثابت -->
     <footer class="author-footer">
         إعداد أ. صادق القلعاوي | مدرسة اليرموك الابتدائية للبنين 🏫✨
     </footer>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => { fetchAllLeaderboards(); });
-        async function fetchAllLeaderboards() {
-            const combinedTableBody = document.querySelector('#combinedTopTable tbody');
-            const rocketTableBody = document.querySelector('#rocketTopTable tbody');
-            const mineTableBody = document.querySelector('#mineTopTable tbody');
-            const mountainTableBody = document.querySelector('#mountainTopTable tbody');
-            const container = document.getElementById('activeTablesContainer');
+        // مصفوفة تحويل الأرقام إلى حروف ترتيبية عربية دقيقة
+        const rankNames = ["الأول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس", "السابع", "الثامن", "التاسع", "العاشر"];
 
+        let rawDataStore = {
+            combined: [],
+            rocket: [],
+            mine: [],
+            mountain: [],
+            snake: []
+        };
+
+        let showAllState = {
+            combined: false,
+            rocket: false,
+            mine: false,
+            mountain: false,
+            snake: false
+        };
+
+        document.addEventListener('DOMContentLoaded', () => { fetchAllLeaderboards(); });
+
+        async function fetchAllLeaderboards() {
             try {
                 const { data: rocketData } = await supabaseClient.from('rocket_scores').select('*');
                 let rocketList = rocketData ? rocketData.map(i => ({ student_name: i.student_name, cls: i.cls || 'غير مصنف', points: i.points || 0 })) : [];
@@ -119,24 +234,26 @@
                 const { data: mountainData } = await supabaseClient.from('mountain_scores').select('*');
                 let mountainList = mountainData ? mountainData.map(i => ({ student_name: i.student_name, cls: i.cls || 'غير مصنف', points: i.points || 0 })) : [];
 
-                renderTopTableForGame(rocketList, rocketTableBody);
-                renderTopTableForGame(mineList, mineTableBody);
-                renderTopTableForGame(mountainList, mountainTableBody);
+                const { data: snakeData } = await supabaseClient.from('snake_scores').select('*');
+                let snakeList = snakeData ? snakeData.map(i => ({ student_name: i.student_name, cls: i.cls || 'غير مصنف', points: i.points || 0, weekly_points: i.weekly_points || 0 })) : [];
 
-                let allCombined = [...rocketList, ...mineList, ...mountainList];
+                renderGameList('rocket', rocketList);
+                renderGameList('mine', mineList);
+                renderGameList('mountain', mountainList);
+                renderGameList('snake', snakeList);
+
+                let allCombined = [...rocketList, ...mineList, ...mountainList, ...snakeList];
                 let combinedBest = {};
                 allCombined.forEach(item => {
                     let key = item.student_name + '_' + item.cls;
                     if (!combinedBest[key] || item.points > combinedBest[key].points) combinedBest[key] = item;
                 });
-                let combinedArr = Object.values(combinedBest).sort((a, b) => b.points - a.points).slice(0, 10);
+                let combinedArr = Object.values(combinedBest).sort((a, b) => b.points - a.points);
                 
-                combinedTableBody.innerHTML = combinedArr.length === 0 ? '<tr><td colspan="4">لا توجد نتائج مسجلة.</td></tr>' : '';
-                combinedArr.forEach((row, index) => {
-                    let medal = index === 0 ? '🥇 الأول' : index === 1 ? '🥈 الثاني' : index === 2 ? '🥉 الثالث' : (index + 1);
-                    combinedTableBody.innerHTML += `<tr><td><b>${medal}</b></td><td><b>${row.student_name}</b></td><td>${row.cls}</td><td><b style="color: #2e7d32;">${row.points}</b></td></tr>`;
-                });
+                rawDataStore.combined = combinedArr;
+                renderListUI('combined', combinedArr);
 
+                // معالجة الأكثر تفاعلاً حسب الصفوف
                 let gradeGroups = { '3': { title: '⭐️ الصف الثالث', students: {} }, '4': { title: '⭐️ الصف الرابع', students: {} }, '5': { title: '⭐️ الصف الخامس', students: {} }, '6': { title: '⭐️ الصف السادس', students: {} }, 'other': { title: '⭐️ صفوف أخرى', students: {} } };
                 allCombined.forEach(item => {
                     let clsStr = String(item.cls).trim();
@@ -146,33 +263,80 @@
                     gradeGroups[groupKey].students[studentKey].count++;
                 });
 
-                container.innerHTML = '';
+                const activeContainer = document.getElementById('activeGridsContainer');
+                activeContainer.innerHTML = '';
                 ['3', '4', '5', '6', 'other'].forEach(key => {
                     let group = gradeGroups[key];
                     let studentsArr = Object.values(group.students).sort((a, b) => b.count - a.count);
                     if (studentsArr.length === 0) return;
-                    let tableHTML = `<h3>${group.title}</h3><table><thead><tr><th>المركز ⭐️</th><th>اسم الطالب</th><th>الصف</th><th>عدد المحاولات 🔄</th></tr></thead><tbody>`;
-                    studentsArr.slice(0, 10).forEach((st, idx) => {
-                        let rank = idx === 0 ? '⚔️ الأكثر تفاعلاً' : (idx + 1);
-                        tableHTML += `<tr><td><b>${rank}</b></td><td><b>${st.student_name}</b></td><td>${st.cls}</td><td><b style="color: #d81b60;">${st.count} مرات</b></td></tr>`;
+
+                    let miniHTML = `<div class="mini-board"><h3>${group.title}</h3><div class="rank-list">`;
+                    studentsArr.slice(0, 5).forEach((st, idx) => {
+                        let rankStr = rankNames[idx] || (idx + 1);
+                        miniHTML += `<div class="rank-item"><span><b>${rankStr}</b> - ${st.student_name} (${st.cls})</span><span style="color:var(--primary); font-weight:bold;">${st.count} مرات</span></div>`;
                     });
-                    container.innerHTML += tableHTML + `</tbody></table><br>`;
+                    miniHTML += `</div></div>`;
+                    activeContainer.innerHTML += miniHTML;
                 });
-            } catch (err) { console.error("Error:", err); }
+
+            } catch (err) { console.error("Error loading leaderboards:", err); }
         }
 
-        function renderTopTableForGame(list, tableBody) {
+        function renderGameList(gameKey, list) {
             let bestMap = {};
             list.forEach(item => {
                 let key = item.student_name + '_' + item.cls;
                 if (!bestMap[key] || item.points > bestMap[key].points) bestMap[key] = item;
             });
-            let sortedArr = Object.values(bestMap).sort((a, b) => b.points - a.points).slice(0, 10);
-            tableBody.innerHTML = sortedArr.length === 0 ? '<tr><td colspan="4">لا توجد نتائج مسجلة.</td></tr>' : '';
-            sortedArr.forEach((row, index) => {
-                let medal = index === 0 ? '🥇 الأول' : index === 1 ? '🥈 الثاني' : index === 2 ? '🥉 الثالث' : (index + 1);
-                tableBody.innerHTML += `<tr><td><b>${medal}</b></td><td><b>${row.student_name}</b></td><td>${row.cls}</td><td><b style="color: #2e7d32;">${row.points}</b></td></tr>`;
-            });
+            let sortedArr = Object.values(bestMap).sort((a, b) => b.points - a.points);
+            rawDataStore[gameKey] = sortedArr;
+            renderListUI(gameKey, sortedArr);
+        }
+
+        function renderListUI(gameKey, dataArr) {
+            const container = document.getElementById(gameKey + 'List');
+            const moreBtn = document.getElementById('more' + capitalize(gameKey));
+            
+            if (dataArr.length === 0) {
+                container.innerHTML = '<div style="text-align:center; color:#666; padding:10px;">لا توجد نتائج مسجلة حتى الآن.</div>';
+                if(moreBtn) moreBtn.classList.add('hidden');
+                return;
+            }
+
+            let limit = showAllState[gameKey] ? dataArr.length : Math.min(5, dataArr.length);
+            let html = '';
+
+            for (let i = 0; i < limit; i++) {
+                let row = dataArr[i];
+                let rankText = rankNames[i] || (i + 1);
+                let topClass = i === 0 ? 'top-1' : i === 1 ? 'top-2' : i === 2 ? 'top-3' : '';
+                let medalIcon = i === 0 ? '🥇 ' : i === 1 ? '🥈 ' : i === 2 ? '🥉 ' : '';
+
+                html += `
+                    <div class="rank-item ${topClass}">
+                        <span><b>${medalIcon}${rankText}</b>: ${row.student_name} (${row.cls})</span>
+                        <span style="color: #2e7d32; font-weight: bold;">${row.points} نقطة</span>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+
+            if (dataArr.length > 5) {
+                moreBtn.classList.remove('hidden');
+                moreBtn.textContent = showAllState[gameKey] ? 'إخفاء 👆' : 'عرض المزيد (حتى العاشر) 👇';
+            } else {
+                moreBtn.classList.add('hidden');
+            }
+        }
+
+        function toggleMore(gameKey) {
+            showAllState[gameKey] = !showAllState[gameKey];
+            renderListUI(gameKey, rawDataStore[gameKey]);
+        }
+
+        function capitalize(s) {
+            return s.charAt(0).toUpperCase() + s.slice(1);
         }
     </script>
 </body>
