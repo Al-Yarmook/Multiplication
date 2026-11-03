@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة فرسان جدول الضرب - تقارير الأداء </title>
+    <title>منصة فرسان جدول الضرب - تقارير الأداء الشاملة</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="config.js"></script>
@@ -46,51 +46,44 @@
         .btn-red { background: #d32f2f; }
         .btn-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
 
-        .report-preview-area { background: white; padding: 10px; border-radius: 12px; margin-top: 5px; }
+        .report-preview-area { background: white; padding: 15px; border-radius: 12px; margin-top: 5px; }
         
         .report-single-page { 
             page-break-after: always; 
             break-after: page; 
-            page-break-inside: avoid;
-            break-inside: avoid;
-            display: flex; 
-            flex-direction: column; 
-            justify-content: space-between; 
-            height: 98vh;
-            max-height: 98vh;
-            padding: 5px 10px;
-            box-sizing: border-box;
-            overflow: hidden;
+            margin-bottom: 30px;
+            background: white;
+            padding: 10px;
         }
 
-        .report-header { text-align: center; margin-bottom: 4px; }
+        .print-table { width: 100%; border-collapse: collapse; }
+        
+        /* تفعيل تكرار الهيدر والفوتر بخصائص الجداول المتقدمة للطباعة */
+        thead { display: table-header-group; }
+        tfoot { display: table-footer-group; }
+        tr { page-break-inside: avoid; break-inside: avoid; }
+
+        .report-header { text-align: center; padding-bottom: 10px; margin-bottom: 10px; border-bottom: 2px solid #e2e8f0; }
         .report-logo { max-height: 45px; display: block; margin: 0 auto 3px auto; object-fit: contain; }
         .report-title { font-size: 14px; font-weight: bold; color: #1e293b; }
         .teacher-info { font-size: 11px; font-weight: bold; color: var(--primary); margin-top: 1px; }
 
-        .report-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; font-size: 10px; }
-        .report-table th, .report-table td { border: 1px solid #cbd5e1; padding: 2px 4px; text-align: center; line-height: 1.2; }
-        .report-table th { background: #f1f5f9; color: #1e293b; font-weight: bold; font-size: 10.5px; }
+        .report-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 11px; }
+        .report-table th, .report-table td { border: 1px solid #cbd5e1; padding: 4px 6px; text-align: center; line-height: 1.3; }
+        .report-table th { background: #f1f5f9; color: #1e293b; font-weight: bold; font-size: 11.5px; }
 
-        /* جدول التذييل الافتراضي (5 أعمدة) دون أي توقيع للموقع */
-        .footer-table { width: 100%; border-collapse: collapse; margin-top: auto; border: none !important; }
-        .footer-table td { border: none !important; padding: 2px; text-align: center; vertical-align: top; width: 20%; }
+        .footer-table { width: 100%; border-collapse: collapse; margin-top: 15px; border: none !important; }
+        .footer-table td { border: none !important; padding: 4px; text-align: center; vertical-align: top; width: 20%; }
         .footer-editable-cell { width: 100%; min-height: 35px; background: transparent; border: none; text-align: center; font-family: 'Cairo'; resize: none; outline: none; line-height: 1.2; }
 
         .hidden { display: none !important; }
 
         @media print {
-            @page { size: auto; margin: 5mm; }
+            @page { size: auto; margin: 10mm; }
             body { background: white; padding: 0; margin: 0; }
             header, .card:not(#reportOutputCard), .btn-row, .nav-tabs, footer.author-footer, #reportHeaderTitleCard { display: none !important; }
             .report-preview-area { box-shadow: none; padding: 0; margin: 0; }
-            .report-single-page { 
-                page-break-after: always; 
-                break-after: page; 
-                height: 99vh !important; 
-                max-height: 99vh !important;
-                padding: 0;
-            }
+            .report-single-page { page-break-after: always; break-after: page; margin: 0; }
         }
     </style>
 </head>
@@ -207,8 +200,6 @@
         </div>
     </div>
 
-    <!-- تم إزالة توقيع الموقع نهائياً -->
-
     <script>
         let currentUser = null;
         try { currentUser = JSON.parse(localStorage.getItem('current_staff_user')); } catch (e) {}
@@ -219,6 +210,7 @@
 
         let cloudSections = [];
         let classTeachersAssignments = [];
+        let teacherAssignedClassesList = [];
 
         document.addEventListener('DOMContentLoaded', () => {
             checkUserPermissions();
@@ -276,6 +268,21 @@
 
                 if (ctRes.data) classTeachersAssignments = ctRes.data;
 
+                // جلب صفوف المعلم الحالي حصرياً من جدول class_teachers في السحابة بناءً على اسمه
+                const roleVal = currentUser ? String(currentUser.role || '').trim().toLowerCase() : 'teacher';
+                const isTeacher = (roleVal === 'teacher' || roleVal === 'معلم');
+
+                if (isTeacher && currentUser.name) {
+                    const { data: teacherCtData } = await supabaseClient
+                        .from('class_teachers')
+                        .select('cls')
+                        .eq('teacher_name', currentUser.name);
+                    
+                    if (teacherCtData) {
+                        teacherAssignedClassesList = teacherCtData.map(item => String(item.cls).trim());
+                    }
+                }
+
                 let sectionsSet = new Set();
                 if (stRes.data) {
                     stRes.data.forEach(st => {
@@ -305,11 +312,8 @@
             const roleVal = currentUser ? String(currentUser.role || '').trim().toLowerCase() : 'teacher';
             const isTeacher = (roleVal === 'teacher' || roleVal === 'معلم');
             
-            let teacherClasses = (isTeacher && currentUser.classes) 
-                ? currentUser.classes.split(',').map(c => c.trim()) 
-                : [];
-
-            let availableSections = isTeacher ? teacherClasses : cloudSections;
+            // الاعتماد الكامل على الصفوف المسندة للمعلم من جدول class_teachers بالسحابة
+            let availableSections = isTeacher ? teacherAssignedClassesList : cloudSections;
 
             let filtered = availableSections;
             if (gradeVal !== 'all') {
@@ -319,7 +323,7 @@
             if (filtered.length === 0) {
                 let opt = document.createElement('option');
                 opt.disabled = true;
-                opt.textContent = isTeacher ? 'لا توجد صفوف مسندة لحسابك' : 'لا توجد شعب مسجلة في السحابة';
+                opt.textContent = isTeacher ? 'لا توجد صفوف مسندة لحسابك في السحابة' : 'لا توجد شعب مسجلة في السحابة';
                 selectEl.appendChild(opt);
                 return;
             }
@@ -348,7 +352,6 @@
             }
         }
 
-        // جلب اسم معلم الصف حصرياً من جدول class_teachers في السحابة
         function getTeacherNameForSection(sec) {
             let foundInCT = classTeachersAssignments.find(item => item.cls === sec);
             if (foundInCT && foundInCT.teacher_name) {
@@ -435,40 +438,45 @@
                     let teacherName = getTeacherNameForSection(sec);
 
                     htmlContent += `<div class="report-single-page">`;
+                    htmlContent += `<table class="print-table">`;
 
+                    // ترويسة متكررة في كل صفحة (thead)
                     htmlContent += `
-                        <div>
-                            <div class="report-header">
-                                ${savedLogoBase64 ? `<img src="${savedLogoBase64}" class="report-logo">` : ''}
-                                <div class="report-title">تقرير أداء الطلاب - الشعبة (${sec})</div>
-                                <div class="teacher-info">معلم الصف: ${teacherName}</div>
-                            </div>
+                        <thead>
+                            <tr>
+                                <td colspan="10">
+                                    <div class="report-header">
+                                        ${savedLogoBase64 ? `<img src="${savedLogoBase64}" class="report-logo">` : ''}
+                                        <div class="report-title">تقرير أداء الطلاب - الشعبة (${sec})</div>
+                                        <div class="teacher-info">معلم الصف: ${teacherName}</div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
                     `;
 
+                    if (activeCols.includes('name')) htmlContent += `<th>اسم الطالب</th>`;
+                    if (activeCols.includes('cls')) htmlContent += `<th>الفرقة</th>`;
+                    if (activeCols.includes('total')) htmlContent += `<th>المجموع</th>`;
+                    if (activeCols.includes('rocket')) htmlContent += `<th>الصواريخ</th>`;
+                    if (activeCols.includes('goldmine')) htmlContent += `<th>المنجم</th>`;
+                    if (activeCols.includes('mountain')) htmlContent += `<th>القمة</th>`;
+                    if (activeCols.includes('snake')) htmlContent += `<th>الحية والسلم</th>`;
+                    if (activeCols.includes('rank_school')) htmlContent += `<th>تصنيف المدرسة</th>`;
+                    if (activeCols.includes('rank_section')) htmlContent += `<th>تصنيف الفرقة</th>`;
+                    if (activeCols.includes('rank_grade')) htmlContent += `<th>تصنيف المرحلة</th>`;
+
+                    htmlContent += `</tr></thead>`;
+
+                    // جسم الجدول (tbody)
+                    htmlContent += `<tbody>`;
                     if (secStudents.length === 0) {
-                        htmlContent += `<p style="text-align:center; color:#666; padding:15px;">لا توجد بيانات مسجلة لطلاب هذه الشعبة.</p>`;
+                        htmlContent += `<tr><td colspan="10" style="text-align:center; color:#666; padding:15px;">لا توجد بيانات مسجلة لطلاب هذه الشعبة.</td></tr>`;
                     } else {
-                        htmlContent += `<table class="report-table"><thead><tr>`;
-                        
-                        if (activeCols.includes('name')) htmlContent += `<th>اسم الطالب</th>`;
-                        if (activeCols.includes('cls')) htmlContent += `<th>الفرقة</th>`;
-                        if (activeCols.includes('total')) htmlContent += `<th>المجموع</th>`;
-                        if (activeCols.includes('rocket')) htmlContent += `<th>الصواريخ</th>`;
-                        if (activeCols.includes('goldmine')) htmlContent += `<th>المنجم</th>`;
-                        if (activeCols.includes('mountain')) htmlContent += `<th>القمة</th>`;
-                        if (activeCols.includes('snake')) htmlContent += `<th>الحية والسلم</th>`;
-                        if (activeCols.includes('rank_school')) htmlContent += `<th>تصنيف المدرسة</th>`;
-                        if (activeCols.includes('rank_section')) htmlContent += `<th>تصنيف الفرقة</th>`;
-                        if (activeCols.includes('rank_grade')) htmlContent += `<th>تصنيف المرحلة</th>`;
-
-                        htmlContent += `</tr></thead><tbody>`;
-
                         secStudents.forEach((st) => {
                             let rankSchool = sortedForRank.findIndex(x => x.name === st.name && x.cls === st.cls) + 1;
-                            
                             let sectionRankList = allStudents.filter(x => x.cls === sec).sort((a, b) => b.total - a.total);
                             let rankSection = sectionRankList.findIndex(x => x.name === st.name && x.cls === st.cls) + 1;
-                            
                             let gradePrefix = sec.charAt(0);
                             let gradeStudents = allStudents.filter(x => x.cls.startsWith(gradePrefix)).sort((a, b) => b.total - a.total);
                             let rankGrade = gradeStudents.findIndex(x => x.name === st.name && x.cls === st.cls) + 1;
@@ -486,26 +494,29 @@
                             if (activeCols.includes('rank_grade')) htmlContent += `<td>المركز ${rankGrade}</td>`;
                             htmlContent += `</tr>`;
                         });
-
-                        htmlContent += `</tbody></table>`;
                     }
+                    htmlContent += `</tbody>`;
 
-                    htmlContent += `</div>`;
-
-                    // جدول التذييل الـ 5 المخصص
+                    // تذييل متكرر في كل صفحة (tfoot)
                     htmlContent += `
-                        <table class="footer-table">
+                        <tfoot>
                             <tr>
-                                <td><textarea class="footer-editable-cell" style="font-size: ${fSize};">${f1}</textarea></td>
-                                <td><textarea class="footer-editable-cell" style="font-size: ${fSize};">${f2}</textarea></td>
-                                <td><textarea class="footer-editable-cell" style="font-size: ${fSize};">${f3}</textarea></td>
-                                <td><textarea class="footer-editable-cell" style="font-size: ${fSize};">${f4}</textarea></td>
-                                <td><textarea class="footer-editable-cell" style="font-size: ${fSize};">${f5}</textarea></td>
+                                <td colspan="10">
+                                    <table class="footer-table">
+                                        <tr>
+                                            <td><textarea class="footer-editable-cell" style="font-size: ${fSize};">${f1}</textarea></td>
+                                            <td><textarea class="footer-editable-cell" style="font-size: ${fSize};">${f2}</textarea></td>
+                                            <td><textarea class="footer-editable-cell" style="font-size: ${fSize};">${f3}</textarea></td>
+                                            <td><textarea class="footer-editable-cell" style="font-size: ${fSize};">${f4}</textarea></td>
+                                            <td><textarea class="footer-editable-cell" style="font-size: ${fSize};">${f5}</textarea></td>
+                                        </tr>
+                                    </table>
+                                </td>
                             </tr>
-                        </table>
+                        </tfoot>
                     `;
 
-                    htmlContent += `</div>`;
+                    htmlContent += `</table></div>`;
                 });
 
                 container.innerHTML = htmlContent;
@@ -518,7 +529,7 @@
 
         function exportToExcel() {
             const previewArea = document.getElementById('reportPreviewContent');
-            const tables = previewArea.querySelectorAll('table.report-table');
+            const tables = previewArea.querySelectorAll('table.print-table');
             if (tables.length === 0) {
                 alert('⚠️ لا توجد بيانات لتصديرها.');
                 return;
