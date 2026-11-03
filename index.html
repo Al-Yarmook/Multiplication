@@ -17,7 +17,6 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
         
-        /* تثبيت الهيكل العام لكي تبقى الرأسية والتذييل في مكانهما */
         body { 
             background-color: var(--bg); 
             color: var(--text); 
@@ -26,12 +25,11 @@
             flex-direction: column; 
             align-items: center; 
             justify-content: space-between; 
-            padding: 80px 20px 70px 20px; /* مسافات علوية وسفلية لعدم تداخل المحتوى مع الثوابت */
+            padding: 130px 20px 80px 20px; 
         }
         
         .container { max-width: 950px; width: 100%; text-align: center; margin: auto; }
         
-        /* 1. تثبيت الهيدر في أعلى الشاشة بشكل دائم */
         header { 
             position: fixed; 
             top: 0; 
@@ -44,10 +42,26 @@
             z-index: 1000; 
             text-align: center;
         }
-        header h1 { color: var(--primary); font-size: 24px; font-weight: 900; margin-bottom: 4px; }
-        header p { color: #64748b; font-size: 13px; margin: 0; }
+        header h1 { color: var(--primary); font-size: 22px; font-weight: 900; margin-bottom: 2px; }
+        header p { color: #64748b; font-size: 12px; margin: 0; }
 
-        .student-greeting { background: #fce4ec; color: var(--primary); padding: 10px 18px; border-radius: 12px; display: inline-block; font-weight: bold; margin-bottom: 20px; font-size: 15px; border: 1px solid #f8bbd0; }
+        .student-greeting { 
+            background: #fce4ec; 
+            color: var(--primary); 
+            padding: 12px 20px; 
+            border-radius: 14px; 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 15px; 
+            font-weight: bold; 
+            margin-bottom: 25px; 
+            font-size: 16px; 
+            border: 1px solid #f8bbd0; 
+            box-shadow: 0 2px 8px rgba(216,27,96,0.06);
+            width: 100%;
+            max-width: 650px;
+        }
 
         .portal-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .portal-card { 
@@ -76,9 +90,16 @@
         .btn-dark { background: #334155; }
 
         .student-dashboard-section { background: #ffffff; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-top: 10px; border: 1px solid #e2e8f0; }
-        .student-dashboard-section h2 { color: var(--primary); font-size: 22px; margin-bottom: 20px; font-weight: 800; }
+        .student-dashboard-section h2 { color: var(--primary); font-size: 20px; margin-bottom: 15px; font-weight: 800; text-align: right; }
 
-        .games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        /* بطاقة عرض التصنيفات الثلاثة (الفرقة - المرحلة - المدرسة) */
+        .ranks-summary-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 15px; margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; text-align: center; }
+        .rank-badge-item { background: white; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 13px; font-weight: bold; color: #334155; }
+        .rank-badge-item span { color: var(--primary); font-size: 15px; display: block; margin-top: 3px; }
+
+        .games-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px; }
+        @media (max-width: 600px) { .games-grid { grid-template-columns: 1fr; } }
+
         .game-card { 
             background: #f8fafc; 
             border-radius: 15px; 
@@ -91,15 +112,15 @@
             justify-content: space-between; 
             cursor: pointer; 
             user-select: none;
+            text-align: center;
         }
         .game-card:hover { border-color: var(--primary); transform: translateY(-5px); box-shadow: 0 8px 20px rgba(216,27,96,0.12); }
-        .game-card h3 { color: var(--text); font-size: 17px; margin: 8px 0; }
+        .game-card h3 { color: var(--text); font-size: 16px; margin: 8px 0; }
         .game-card p { color: #64748b; font-size: 12px; margin-bottom: 12px; line-height: 1.4; }
 
         .student-nav-actions { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 20px; border-top: 1px dashed #cbd5e1; padding-top: 20px; }
         .student-nav-actions .btn { pointer-events: auto; }
 
-        /* 2. تثبيت التذييل (Footer) في أسفل الشاشة بشكل دائم */
         footer.author-footer {
             position: fixed;
             bottom: 0;
@@ -121,7 +142,6 @@
 </head>
 <body>
 
-    <!-- الهيدر الثابت في الأعلى -->
     <header>
         <h1>⚔️ منصة فرسان جدول الضرب</h1>
         <p id="headerSubtext">مرحباً بك! اختر وجهتك أو نوع الدخول للمتابعة:</p>
@@ -130,8 +150,8 @@
     <div class="container">
         <!-- شريط الترحيب بالطالب -->
         <div id="greetingBox" class="student-greeting hidden">
-            أهلاً بك يا <span id="displayName">بطل</span> (<span id="displayClass">الصف</span>) 🌟 
-            <button onclick="changeStudent()" style="background:none; border:none; color:#d32f2f; font-weight:bold; cursor:pointer; margin-right:10px; font-family:'Cairo'; font-size:14px;">تغيير الطالب 🔄</button>
+            <div>أهلاً بالبطل: <span id="displayName" style="color:#ad1457; font-weight:900;">بطل</span> (<span id="displayClass">الصف</span>) 🌟</div>
+            <button onclick="changeStudent()" style="background:#fff; border:1px solid #d32f2f; color:#d32f2f; font-weight:bold; cursor:pointer; padding:4px 10px; border-radius:6px; font-family:'Cairo'; font-size:12px;">تغيير الطالب 🔄</button>
         </div>
 
         <!-- واجهة اختيار نوع الدخول العامة -->
@@ -157,7 +177,7 @@
             <div class="portal-card" onclick="window.location.href='staff.html'">
                 <div>
                     <div class="portal-icon">👨‍🏫</div>
-                    <h3>المعلمين </h3>
+                    <h3>المعلمين</h3>
                     <p>لوحة التحكم الشاملة لإدارة بيانات الطلاب، الألعاب، والدرجات.</p>
                 </div>
                 <span class="btn btn-dark">بوابة المعلمين 🔑</span>
@@ -166,13 +186,20 @@
 
         <!-- لوحة الطالب المخصصة -->
         <div id="studentDashboard" class="student-dashboard-section hidden">
+            <h2>📊 تصنيفاتك ومستواك القيادي:</h2>
+            <div class="ranks-summary-box" id="studentRanksBox">
+                <div class="rank-badge-item">على مستوى الفرقة (الشعبة): <span id="sectionRankText">جاري الحساب...</span></div>
+                <div class="rank-badge-item">على مستوى المرحلة (الصف): <span id="classRankText">جاري الحساب...</span></div>
+                <div class="rank-badge-item">على مستوى المدرسة: <span id="schoolRankText">جاري الحساب...</span></div>
+            </div>
+
             <h2>🎮 اختر اللعبة وابدأ التحدي الآن:</h2>
             
             <div class="games-grid">
                 <!-- صواريخ الفضاء -->
                 <div class="game-card" onclick="window.location.href='rocket.html'">
                     <div>
-                        <div style="font-size: 35px;">🚀</div>
+                        <div style="font-size: 32px;">🚀</div>
                         <h3>سباق صواريخ الفضاء</h3>
                         <p>أجب بسرعة وأطلق صاروخك نحو الفضاء واكسب النقاط!</p>
                     </div>
@@ -182,7 +209,7 @@
                 <!-- منجم الذهب -->
                 <div class="game-card" onclick="window.location.href='goldmine.html'">
                     <div>
-                        <div style="font-size: 35px;">⛏️</div>
+                        <div style="font-size: 32px;">⛏️</div>
                         <h3>لغز منجم الذهب</h3>
                         <p>اكسر الصخور، حل لغز الضرب، وافتح صندوق الذهب!</p>
                     </div>
@@ -192,17 +219,17 @@
                 <!-- الصعود نحو القمة -->
                 <div class="game-card" onclick="window.location.href='mountain.html'">
                     <div>
-                        <div style="font-size: 35px;">🧗‍♂️</div>
+                        <div style="font-size: 32px;">🧗‍♂️</div>
                         <h3>الصعود نحو القمة</h3>
                         <p>أجب عن المسائل وتسلق الجبل نحو قمة المجد!</p>
                     </div>
                     <span class="btn" style="background: #0284c7;">تسلق الجبل 🧗‍♂️</span>
                 </div>
 
-                <!-- لعبة الحية والسلم المضافة حديثاً -->
+                <!-- لعبة الحية والسلم -->
                 <div class="game-card" onclick="window.location.href='snake.html'">
                     <div>
-                        <div style="font-size: 35px;">🐍</div>
+                        <div style="font-size: 32px;">🐍</div>
                         <h3>الحية والسلم</h3>
                         <p>ارمِ النرد، اصعد السلالم بالذكاء وتجنب الثعابين!</p>
                     </div>
@@ -217,7 +244,6 @@
         </div>
     </div>
 
-    <!-- التذييل الثابت في الأسفل -->
     <footer class="author-footer">
         إعداد أ. صادق القلعاوي | مدرسة اليرموك الابتدائية للبنين 🏫✨
     </footer>
@@ -231,9 +257,76 @@
             document.getElementById('displayClass').textContent = studentData.cls || 'غير مصنف';
             document.getElementById('greetingBox').classList.remove('hidden');
             document.getElementById('studentDashboard').classList.remove('hidden');
-
             document.getElementById('publicPortalGrid').classList.add('hidden');
             document.getElementById('headerSubtext').textContent = 'جاهز للتحدي والمنافسة؟ اختر لعبتك المفضلة!';
+
+            // جلب وحساب التصنيفات الثلاثة
+            calculateStudentRanks(studentData.name, studentData.cls);
+        }
+
+        async function calculateStudentRanks(currentName, currentClass) {
+            try {
+                const [rocket, mine, mountain, snake] = await Promise.all([
+                    supabaseClient.from('rocket_scores').select('student_name, cls, points'),
+                    supabaseClient.from('goldmine_scores').select('student_name, cls, points'),
+                    supabaseClient.from('mountain_scores').select('student_name, cls, points'),
+                    supabaseClient.from('snake_scores').select('student_name, cls, points')
+                ]);
+
+                let allRecords = [
+                    ...(rocket.data || []),
+                    ...(mine.data || []),
+                    ...(mountain.data || []),
+                    ...(snake.data || [])
+                ];
+
+                let studentBestPoints = {};
+                allRecords.forEach(item => {
+                    let key = item.student_name + '_' + (item.cls || 'غير مصنف');
+                    let pts = item.points || 0;
+                    if (!studentBestPoints[key] || pts > studentBestPoints[key].points) {
+                        studentBestPoints[key] = {
+                            name: item.student_name,
+                            cls: item.cls || 'غير مصنف',
+                            points: pts
+                        };
+                    }
+                });
+
+                let leaderboardArray = Object.values(studentBestPoints).sort((a, b) => b.points - a.points);
+
+                // 1. الترتيب على مستوى الفرقة (الشعبة المحددة بالضبط مثل 4ب1)
+                let sectionStudents = leaderboardArray.filter(s => s.cls === currentClass);
+                let sectionRank = sectionStudents.findIndex(s => s.name === currentName);
+                let sectionRankText = sectionRank !== -1 ? `المركز ${toArabicNum(sectionRank + 1)} 🎖️` : 'لم يسجل بعد';
+
+                // 2. الترتيب على مستوى المرحلة / الصف ككل (يشمل جميع الشعب مثل 4ب1، 4ب2، 4ب3...)
+                let currentGradePrefix = String(currentClass).trim().charAt(0);
+                let gradeStudents = leaderboardArray.filter(s => {
+                    let clsStr = String(s.cls).trim();
+                    return clsStr.charAt(0) === currentGradePrefix;
+                });
+                let gradeRank = gradeStudents.findIndex(s => s.name === currentName && s.cls === currentClass);
+                let classRankText = gradeRank !== -1 ? `المركز ${toArabicNum(gradeRank + 1)} ⭐️` : 'لم يسجل بعد';
+
+                // 3. الترتيب على مستوى المدرسة ككل
+                let schoolRank = leaderboardArray.findIndex(s => s.name === currentName && s.cls === currentClass);
+                let schoolRankText = schoolRank !== -1 ? `المركز ${toArabicNum(schoolRank + 1)} 🥇` : 'لم يسجل بعد';
+
+                document.getElementById('sectionRankText').textContent = sectionRankText;
+                document.getElementById('classRankText').textContent = classRankText;
+                document.getElementById('schoolRankText').textContent = schoolRankText;
+
+            } catch (e) {
+                document.getElementById('sectionRankText').textContent = 'تعذر الحساب';
+                document.getElementById('classRankText').textContent = 'تعذر الحساب';
+                document.getElementById('schoolRankText').textContent = 'تعذر الحساب';
+            }
+        }
+
+        function toArabicNum(num) {
+            const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+            return String(num).replace(/\d/g, (d) => arabicNumbers[d]);
         }
 
         function changeStudent() {
