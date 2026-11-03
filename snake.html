@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>لعبة الحية والدرج - ملك جدول الضرب</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="config.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #d81b60;
+            --primary-hover: #ad1457;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+        }
+        * { touch-action: manipulation; box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; user-select: none; }
+        body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 10px; overflow-x: hidden; }
+
+        .game-container { max-width: 550px; width: 100%; background: white; border-radius: 15px; padding: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); display: flex; flex-direction: column; align-items: center; position: relative; border-top: 5px solid var(--primary); }
+
+        .hud { display: flex; justify-content: space-between; width: 100%; font-size: 13px; font-weight: bold; background: #f8fafc; padding: 8px 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #e2e8f0; }
+        .hud span { color: var(--primary); }
+
+        .board-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; width: 100%; max-width: 400px; background: #334155; padding: 6px; border-radius: 10px; margin-bottom: 10px; box-shadow: inset 0 2px 8px rgba(0,0,0,0.3); }
+        .cell { background: #f8fafc; aspect-ratio: 1; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; position: relative; border: 1px solid #cbd5e1; }
+        .cell.ladder { background: #dcfce7; border-color: #86efac; color: #16a34a; }
+        .cell.snake { background: #fee2e2; border-color: #fca5a5; color: #dc2626; }
+        .player-token { position: absolute; font-size: 22px; z-index: 5; transition: 0.3s ease-in-out; }
+
+        .dice-section { display: flex; align-items: center; gap: 15px; margin-bottom: 10px; }
+        .dice-box { width: 55px; height: 55px; background: white; border: 3px solid var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 900; color: var(--primary); box-shadow: 0 4px 10px rgba(216,27,96,0.2); cursor: pointer; transition: 0.2s; }
+        .dice-box.rolling { animation: shake 0.4s infinite; }
+        @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(-10deg); } 50% { transform: rotate(10deg); } 100% { transform: rotate(0deg); } }
+
+        .question-card { background: #ffffff; border: 2px solid var(--primary); padding: 12px; width: 100%; max-width: 420px; text-align: center; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 10px; }
+        .q-title { font-size: 13px; font-weight: bold; color: #64748b; margin-bottom: 5px; }
+        .q-box { font-size: 24px; font-weight: 900; color: var(--primary); margin-bottom: 10px; }
+
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; max-width: 400px; }
+        .opt-btn { background: #ffffff; border: 2px solid var(--primary); color: var(--primary); padding: 10px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; font-family: 'Cairo'; }
+        .opt-btn:hover { background: var(--primary); color: white; }
+
+        .answer-display { background: #f8fafc; border: 2px solid #cbd5e1; border-radius: 8px; padding: 6px; font-size: 20px; font-weight: bold; color: #1e293b; min-height: 40px; width: 100%; max-width: 220px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 8px; letter-spacing: 2px; }
+        .keypad-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; width: 100%; max-width: 340px; margin: 0 auto; }
+        .key-btn { background: #ffffff; border: 2px solid #cbd5e1; color: var(--text); padding: 8px 0; border-radius: 8px; font-size: 17px; font-weight: bold; cursor: pointer; transition: 0.15s; font-family: 'Cairo'; }
+        .key-btn:hover { background: #e2e8f0; border-color: var(--primary); color: var(--primary); }
+        .action-row { display: flex; gap: 6px; width: 100%; max-width: 340px; margin-top: 5px; }
+        .key-btn.action-clear { background: #fee2e2; color: #dc2626; border-color: #fca5a5; flex: 1; }
+        .key-btn.action-reset { background: #fef3c7; color: #d97706; border-color: #fde68a; flex: 1; }
+        .key-btn.action-submit { background: #dcfce7; color: #16a34a; border-color: #86efac; flex: 2; }
+
+        .event-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; color: white; text-align: center; padding: 20px; border-radius: 15px; }
+        .event-overlay h2 { font-size: 28px; margin-bottom: 10px; color: #f43f5e; }
+        .event-emoji { font-size: 60px; margin-bottom: 15px; animation: bounce 0.5s infinite alternate; }
+        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-10px); } }
+
+        .modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 200; text-align: center; padding: 20px; border-radius: 15px; }
+        .modal h1 { color: var(--primary); font-size: 24px; margin-bottom: 12px; }
+        .instructions-box { background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #cbd5e1; text-align: right; margin-bottom: 15px; width: 100%; max-width: 420px; font-size: 13px; line-height: 1.5; }
+        
+        .btn { background: var(--primary); color: white; border: none; padding: 10px 25px; font-size: 15px; font-weight: bold; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; transition: 0.3s; text-decoration: none; display: inline-block; }
+        .btn:hover { background: var(--primary-hover); transform: translateY(-2px); }
+        .btn-dark { background: #334155; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <!-- شاشة التعليمات -->
+        <div class="modal" id="instructionsModal">
+            <h1>🐍 تعليمات لعبة الحية والدرج الرياضية</h1>
+            <div class="instructions-box">
+                <ul>
+                    <li>🎲 <b>رمي النرد:</b> انقر على النرد للتحرك، وسيظهر سؤال رياضيات مختلط <b>مع خيارات</b>.</li>
+                    <li>🪜 <b>السلالم والثعابين:</b> عند مواجهة سلم أو ثعبان، سيظهر سؤال رياضيات مختلط <b>بدون خيارات (اكتب الإجابة)</b>.</li>
+                    <li>⭐ <b>النقاط:</b> الإجابة الصحيحة تمنحك نقاطاً، والخاطئة تخصم منك درجات. صعود السلم يمنحك مكافأة، والثعبان يخصم منك عند الخطأ!</li>
+                    <li>⏱️ <b>الفوز:</b> الترتيب يعتمد على <b>أكبر عدد من النقاط أولاً، ثم أسرع وقت وصولاً للنهاية</b>.</li>
+                </ul>
+            </div>
+            <button class="btn" onclick="startSnakeGame()">ابدأ التحدي الآن 🚀</button>
+        </div>
+
+        <!-- شريط معلومات اللعبة -->
+        <div class="hud">
+            <div>البطل: <span id="playerName">بطل</span></div>
+            <div>⭐ النقاط: <span id="scoreVal">٠</span></div>
+            <div>⏱️ الوقت: <span id="timerVal">٠</span>ث</div>
+            <div>📍 المربع: <span id="posVal">١</span> / ٢٥</div>
+        </div>
+
+        <!-- لوحة مربعات اللعبة -->
+        <div class="board-grid" id="boardGrid"></div>
+
+        <!-- منطقة النرد والأسئلة -->
+        <div id="gamePlayArea" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+            <div class="dice-section" id="diceSection">
+                <div style="font-weight: bold; font-size: 14px; color: #475569;">ارمِ النرد للتحرك:</div>
+                <div class="dice-box" id="diceBox" onclick="rollDice()">🎲</div>
+            </div>
+
+            <!-- كرت الأسئلة -->
+            <div class="question-card hidden" id="questionCard">
+                <div class="q-title" id="qTitle">سؤال جديد</div>
+                <div class="q-box" id="qBox">? × ? = ?</div>
+                
+                <!-- خيارات للأسئلة العادية -->
+                <div class="options-grid hidden" id="optionsGrid"></div>
+
+                <!-- لوحة أرقام للسلالم والثعابين -->
+                <div class="hidden" id="keypadArea" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+                    <div class="answer-display" id="ansDisplay">_</div>
+                    <div class="keypad-grid">
+                        <button class="key-btn" onclick="appendKey('1')">١</button>
+                        <button class="key-btn" onclick="appendKey('2')">٢</button>
+                        <button class="key-btn" onclick="appendKey('3')">٣</button>
+                        <button class="key-btn" onclick="appendKey('4')">٤</button>
+                        <button class="key-btn" onclick="appendKey('5')">٥</button>
+                        <button class="key-btn" onclick="appendKey('6')">٦</button>
+                        <button class="key-btn" onclick="appendKey('7')">٧</button>
+                        <button class="key-btn" onclick="appendKey('8')">٨</button>
+                        <button class="key-btn" onclick="appendKey('9')">٩</button>
+                        <button class="key-btn" onclick="appendKey('0')">٠</button>
+                    </div>
+                    <div class="action-row">
+                        <button class="key-btn action-clear" onclick="clearKey()">⌫ حذف</button>
+                        <button class="key-btn action-reset" onclick="resetKey()">C مسح</button>
+                        <button class="key-btn action-submit" onclick="submitKeypadAnswer()">تأكيد ✓</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- نافذة الأحداث الخاصة -->
+        <div class="event-overlay hidden" id="eventOverlay">
+            <div class="event-emoji" id="eventEmoji">🪜</div>
+            <h2 id="eventTitle">عنوان الحدث</h2>
+            <p id="eventDesc" style="font-size: 15px; margin-bottom: 20px;">وصف الحدث</p>
+            <button class="btn" onclick="closeEventOverlay()">متابعة اللعب 🚀</button>
+        </div>
+
+        <!-- شاشة النهاية والفوز -->
+        <div class="modal hidden" id="gameOverModal">
+            <h1>🎉 مبروك الوصول للنهاية! 🏆</h1>
+            <p id="finalScoreText" style="margin-bottom: 15px; font-size: 16px;"></p>
+            <p id="saveStatus" style="color: var(--primary); font-size: 13px; margin-bottom: 15px;"></p>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn" onclick="startSnakeGame()">لعب من جديد 🔄</button>
+                <a href="index.html" class="btn btn-dark">الرئيسية 🏠</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let studentData = null;
+        try { studentData = JSON.parse(localStorage.getItem('current_student')); } catch (e) { studentData = null; }
+        if (!studentData || !studentData.name) { window.location.href = 'student.html'; }
+        else { document.getElementById('playerName').textContent = studentData.name; }
+
+        function playAudioEffect(type) {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+
+                if (type === 'dice') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(300, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+                    osc.start(); osc.stop(ctx.currentTime + 0.25);
+                } else if (type === 'correct') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(500, ctx.currentTime);
+                    osc.frequency.setValueAtTime(800, ctx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                    osc.start(); osc.stop(ctx.currentTime + 0.3);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, ctx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(80, ctx.currentTime + 0.3);
+                    gain.gain.setValueAtTime(0.4, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+                    osc.start(); osc.stop(ctx.currentTime + 0.35);
+                } else if (type === 'ladder') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, ctx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(900, ctx.currentTime + 0.4);
+                    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.45);
+                    osc.start(); osc.stop(ctx.currentTime + 0.45);
+                }
+            } catch (e) {}
+        }
+
+        function toArabicNum(num) {
+            const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+            return String(num).replace(/\d/g, (d) => arabicNumbers[d]);
+        }
+
+        // إعدادات افتراضية قابلة للتعديل من لوحة المدير
+        let snakeSettings = {
+            correctPoints: 50,
+            wrongPenalty: 20,
+            ladderBonus: 100,
+            snakePenalty: 50
+        };
+
+        async function loadSnakeSettings() {
+            try {
+                const { data } = await supabaseClient.from('game_settings').select('value').eq('key', 'snake_game_settings').single();
+                if (data && data.value) snakeSettings = { ...snakeSettings, ...data.value };
+            } catch (e) {}
+        }
+
+        loadSnakeSettings();
+
+        let currentPosition = 1;
+        let score = 0, gameTime = 0, timerInterval = null;
+        let ladders = {}, snakes = {};
+        let currentPuzzle = null;
+        let currentInput = "";
+        let pendingTargetPosition = 1;
+
+        function generateBoardHazards() {
+            ladders = { 3: 11, 7: 18, 14: 22 };
+            snakes = { 16: 5, 20: 9, 24: 13 };
+        }
+
+        function buildBoardUI() {
+            const grid = document.getElementById('boardGrid');
+            grid.innerHTML = '';
+            for (let i = 25; i >= 1; i--) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.id = `cell-${i}`;
+                let label = toArabicNum(i);
+                if (ladders[i]) label += ' 🪜';
+                if (snakes[i]) label += ' 🐍';
+                cell.innerHTML = `<span>${label}</span>`;
+                grid.appendChild(cell);
+            }
+            updatePlayerToken();
+        }
+
+        function updatePlayerToken() {
+            document.querySelectorAll('.player-token').forEach(el => el.remove());
+            const targetCell = document.getElementById(`cell-${currentPosition}`);
+            if (targetCell) {
+                const token = document.createElement('div');
+                token.className = 'player-token';
+                token.textContent = '🏃‍♂️';
+                targetCell.appendChild(token);
+            }
+            document.getElementById('posVal').textContent = toArabicNum(currentPosition);
+            document.getElementById('scoreVal').textContent = toArabicNum(score);
+        }
+
+        function startSnakeGame() {
+            document.getElementById('instructionsModal').classList.add('hidden');
+            document.getElementById('gameOverModal').classList.add('hidden');
+            currentPosition = 1;
+            score = 0;
+            gameTime = 0;
+            generateBoardHazards();
+            buildBoardUI();
+
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                gameTime++;
+                document.getElementById('timerVal').textContent = toArabicNum(gameTime);
+            }, 1000);
+
+            showDiceSection();
+        }
+
+        function showDiceSection() {
+            document.getElementById('diceSection').classList.remove('hidden');
+            document.getElementById('questionCard').classList.add('hidden');
+        }
+
+        function rollDice() {
+            playAudioEffect('dice');
+            const diceBox = document.getElementById('diceBox');
+            diceBox.classList.add('rolling');
+
+            setTimeout(() => {
+                diceBox.classList.remove('rolling');
+                let diceRoll = Math.floor(Math.random() * 3) + 1;
+                diceBox.textContent = toArabicNum(diceRoll);
+                
+                pendingTargetPosition = Math.min(25, currentPosition + diceRoll);
+                generateMixedQuestion('dice', pendingTargetPosition);
+            }, 600);
+        }
+
+        // توليد سؤال مختلط (إما إيجاد الناتج أو العامل المفقود)
+        function generateMixedQuestion(contextType, targetPosOrHazard) {
+            document.getElementById('diceSection').classList.add('hidden');
+            document.getElementById('questionCard').classList.remove('hidden');
+
+            let isProduct = Math.random() > 0.5;
+            let n1 = Math.floor(Math.random() * 9) + 1;
+            let n2 = Math.floor(Math.random() * 9) + 1;
+            let total = n1 * n2;
+            let correctAns = 0;
+
+            if (contextType === 'dice') {
+                // الأسئلة العادية (تتضمن خيارات)
+                document.getElementById('optionsGrid').classList.remove('hidden');
+                document.getElementById('keypadArea').classList.add('hidden');
+                document.getElementById('qTitle').textContent = `سؤال التقدم إلى المربع ${toArabicNum(targetPosOrHazard)}`;
+
+                if (isProduct) {
+                    correctAns = total;
+                    document.getElementById('qBox').textContent = `${toArabicNum(n1)} × ${toArabicNum(n2)} = ؟`;
+                } else {
+                    let missing = Math.random() > 0.5 ? 1 : 2;
+                    correctAns = missing === 1 ? n1 : n2;
+                    if (missing === 1) {
+                        document.getElementById('qBox').textContent = `؟ × ${toArabicNum(n2)} = ${toArabicNum(total)}`;
+                    } else {
+                        document.getElementById('qBox').textContent = `${toArabicNum(n1)} × ؟ = ${toArabicNum(total)}`;
+                    }
+                }
+
+                currentPuzzle = { answer: correctAns, type: 'dice', target: targetPosOrHazard };
+
+                let opts = [correctAns];
+                while(opts.length < 4) {
+                    let w = correctAns + (Math.floor(Math.random() * 5) - 2);
+                    if(w > 0 && !opts.includes(w)) opts.push(w);
+                }
+                opts.sort(() => Math.random() - 0.5);
+
+                const grid = document.getElementById('optionsGrid');
+                grid.innerHTML = '';
+                opts.forEach(o => {
+                    const btn = document.createElement('button');
+                    btn.className = 'opt-btn';
+                    btn.textContent = toArabicNum(o);
+                    btn.onclick = () => checkDiceAnswer(o, correctAns, targetPosOrHazard);
+                    grid.appendChild(btn);
+                });
+
+            } else {
+                // أسئلة السلالم والثعابين (بدون خيارات، كتابة يدوية)
+                document.getElementById('optionsGrid').classList.add('hidden');
+                document.getElementById('keypadArea').classList.remove('hidden');
+
+                currentInput = "";
+                document.getElementById('ansDisplay').textContent = '_';
+
+                let missing = Math.random() > 0.5 ? 1 : 2;
+                correctAns = missing === 1 ? n1 : n2;
+                currentPuzzle = { answer: correctAns, type: contextType, toPos: targetPosOrHazard };
+
+                if (contextType === 'ladder') {
+                    document.getElementById('qTitle').textContent = `🪜 تحدي السلم! اكتب الإجابة لتصعد`;
+                } else {
+                    document.getElementById('qTitle').textContent = `🐍 خطر الثعبان! اكتب الإجابة لتنجو`;
+                }
+
+                if (missing === 1) {
+                    document.getElementById('qBox').textContent = `؟ × ${toArabicNum(n2)} = ${toArabicNum(total)}`;
+                } else {
+                    document.getElementById('qBox').textContent = `${toArabicNum(n1)} × ؟ = ${toArabicNum(total)}`;
+                }
+            }
+        }
+
+        function checkDiceAnswer(selected, correct, targetPos) {
+            if (selected === correct) {
+                playAudioEffect('correct');
+                confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+                score += snakeSettings.correctPoints;
+                currentPosition = targetPos;
+                updatePlayerToken();
+                checkCellHazards();
+            } else {
+                playAudioEffect('wrong');
+                score = Math.max(0, score - snakeSettings.wrongPenalty);
+                updatePlayerToken();
+                alert(`إجابة خاطئة! خصم ${toArabicNum(snakeSettings.wrongPenalty)} نقطة. تبقى في مكانك.`);
+                showDiceSection();
+            }
+        }
+
+        function checkCellHazards() {
+            if (currentPosition === 25) {
+                endGameWin();
+                return;
+            }
+
+            if (ladders[currentPosition]) {
+                generateMixedQuestion('ladder', ladders[currentPosition]);
+            } else if (snakes[currentPosition]) {
+                generateMixedQuestion('snake', snakes[currentPosition]);
+            } else {
+                showDiceSection();
+            }
+        }
+
+        function appendKey(num) {
+            if (currentInput.length < 3) {
+                currentInput += num;
+                document.getElementById('ansDisplay').textContent = toArabicNum(currentInput);
+            }
+        }
+
+        function clearKey() {
+            if (currentInput.length > 0) currentInput = currentInput.slice(0, -1);
+            document.getElementById('ansDisplay').textContent = currentInput === '' ? '_' : toArabicNum(currentInput);
+        }
+
+        function resetKey() {
+            currentInput = "";
+            document.getElementById('ansDisplay').textContent = '_';
+        }
+
+        function submitKeypadAnswer() {
+            if (currentInput === "") return;
+            let userVal = parseInt(currentInput);
+            let correctVal = currentPuzzle.answer;
+            let type = currentPuzzle.type;
+            let target = currentPuzzle.toPos;
+
+            if (userVal === correctVal) {
+                playAudioEffect('correct');
+                confetti({ particleCount: 70, spread: 80, origin: { y: 0.6 } });
+                
+                if (type === 'ladder') {
+                    playAudioEffect('ladder');
+                    score += snakeSettings.ladderBonus;
+                    currentPosition = target;
+                    updatePlayerToken();
+                    showEventOverlay('🪜 تسلقت السلم بنجاح!', `أجبت بشكل صحيح، صعدت للأعلى وربحت مكافأة +${toArabicNum(snakeSettings.ladderBonus)} نقطة!`, '🥳');
+                } else {
+                    score += snakeSettings.correctPoints;
+                    updatePlayerToken();
+                    showEventOverlay('🛡️ نجوت من الثعبان!', 'أجبت بشكل صحيح وحميت نفسك من اللدغة!', '⭐');
+                }
+            } else {
+                playAudioEffect('wrong');
+                if (type === 'ladder') {
+                    score = Math.max(0, score - snakeSettings.wrongPenalty);
+                    updatePlayerToken();
+                    alert(`إجابة خاطئة! خصم ${toArabicNum(snakeSettings.wrongPenalty)} نقطة. لم تستطع صعود السلم وبقيت مكانك.`);
+                    showDiceSection();
+                } else {
+                    score = Math.max(0, score - snakeSettings.snakePenalty);
+                    currentPosition = target;
+                    updatePlayerToken();
+                    showEventOverlay('🐍 التهمك الثعبان!', `إجابة خاطئة جعلتك تنزل للأسفل وخسارة ${toArabicNum(snakeSettings.snakePenalty)} نقطة!`, '💥');
+                }
+            }
+        }
+
+        function showEventOverlay(title, desc, emoji) {
+            document.getElementById('questionCard').classList.add('hidden');
+            const overlay = document.getElementById('eventOverlay');
+            overlay.classList.remove('hidden');
+            document.getElementById('eventTitle').textContent = title;
+            document.getElementById('eventDesc').textContent = desc;
+            document.getElementById('eventEmoji').textContent = emoji;
+        }
+
+        function closeEventOverlay() {
+            document.getElementById('eventOverlay').classList.add('hidden');
+            if (currentPosition === 25) {
+                endGameWin();
+            } else {
+                showDiceSection();
+            }
+        }
+
+        async function endGameWin() {
+            clearInterval(timerInterval);
+            confetti({ particleCount: 150, spread: 100, origin: { y: 0.4 } });
+            const modal = document.getElementById('gameOverModal');
+            modal.classList.remove('hidden');
+            document.getElementById('finalScoreText').textContent = `أحسنت يا ${studentData.name}! حققت ${toArabicNum(score)} نقطة بزمن قدره: ${toArabicNum(gameTime)} ثانية.`;
+            document.getElementById('saveStatus').textContent = 'جاري حفظ النتيجة بالسحابة...';
+
+            try {
+                // الحفظ بقاعدة البيانات وترتيب النتائج بناءً على النقاط أولاً ثم الوقت الأقل
+                await supabaseClient.from('snake_scores').insert([{
+                    student_name: studentData.name, cls: studentData.cls, points: score, weekly_points: gameTime
+                }]);
+                document.getElementById('saveStatus').textContent = '✅ تم حفظ النتيجة بنجاح!';
+            } catch (e) {
+                document.getElementById('saveStatus').textContent = '⚠️ تعذر حفظ النتيجة.';
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('keypadArea').classList.contains('hidden')) return;
+            if (e.key >= '0' && e.key <= '9') appendKey(e.key);
+            else if (e.key === 'Backspace') clearKey();
+            else if (e.key === 'Enter') submitKeypadAnswer();
+        });
+    </script>
+</body>
+</html>
