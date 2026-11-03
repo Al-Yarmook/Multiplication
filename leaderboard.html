@@ -147,6 +147,14 @@
             <button class="more-btn hidden" id="moreCombined" onclick="toggleMore('combined')">عرض المزيد 👇</button>
         </div>
 
+        <!-- الأكثر تفاعلاً (بشكل أفقي متناسق) - تم نقله للأعلى -->
+        <div class="board-card">
+            <div class="board-title">🔥 لوحة الأكثر تفاعلاً ونشاطاً (حسب الصفوف)</div>
+            <div class="active-grid" id="activeGridsContainer">
+                <p style="text-align: center; color: #666; grid-column: 1/-1;">جاري تحليل الأنشطة...</p>
+            </div>
+        </div>
+
         <!-- صواريخ الفضاء -->
         <div class="board-card">
             <div class="board-title">🚀 أبطال صدارة "سباق صواريخ الفضاء"</div>
@@ -183,14 +191,6 @@
             <button class="more-btn hidden" id="moreSnake" onclick="toggleMore('snake')">عرض المزيد 👇</button>
         </div>
 
-        <!-- الأكثر تفاعلاً (بشكل أفقي متناسق) -->
-        <div class="board-card">
-            <div class="board-title">🔥 لوحة الأكثر تفاعلاً ونشاطاً (حسب الصفوف)</div>
-            <div class="active-grid" id="activeGridsContainer">
-                <p style="text-align: center; color: #666; grid-column: 1/-1;">جاري تحليل الأنشطة...</p>
-            </div>
-        </div>
-
         <div class="back-container">
             <a href="index.html" class="back-link">← العودة للرئيسية</a>
         </div>
@@ -202,7 +202,6 @@
     </footer>
 
     <script>
-        // مصفوفة تحويل الأرقام إلى حروف ترتيبية عربية دقيقة
         const rankNames = ["الأول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس", "السابع", "الثامن", "التاسع", "العاشر"];
 
         let rawDataStore = {
@@ -303,10 +302,11 @@
                 return;
             }
 
-            let limit = showAllState[gameKey] ? dataArr.length : Math.min(5, dataArr.length);
+            // تحديد الحد الأقصى للعرض: إما أول 5 أو حتى 10 مراكز كحد أقصى عند تفعيل عرض المزيد
+            let maxDisplayLimit = showAllState[gameKey] ? Math.min(10, dataArr.length) : Math.min(5, dataArr.length);
             let html = '';
 
-            for (let i = 0; i < limit; i++) {
+            for (let i = 0; i < maxDisplayLimit; i++) {
                 let row = dataArr[i];
                 let rankText = rankNames[i] || (i + 1);
                 let topClass = i === 0 ? 'top-1' : i === 1 ? 'top-2' : i === 2 ? 'top-3' : '';
@@ -322,6 +322,7 @@
 
             container.innerHTML = html;
 
+            // إظهار زر المزيد فقط إذا كان هناك أكثر من 5 طلاب، ويكتفي بعرض 10 مراكز كحد أقصى
             if (dataArr.length > 5) {
                 moreBtn.classList.remove('hidden');
                 moreBtn.textContent = showAllState[gameKey] ? 'إخفاء 👆' : 'عرض المزيد (حتى العاشر) 👇';
