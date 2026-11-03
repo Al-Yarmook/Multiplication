@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة فرسان جدول الضرب - تقارير الأداء الشاملة</title>
+    <title>منصة فرسان جدول الضرب - تقارير الأداء </title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="config.js"></script>
@@ -31,58 +31,66 @@
         .card { background: white; border-radius: 12px; padding: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
         .card h2 { color: var(--primary); font-size: 16px; margin-bottom: 12px; font-weight: 800; border-bottom: 2px solid #f1f5f9; padding-bottom: 6px; }
 
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 12px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 10px; }
         .form-group { display: flex; flex-direction: column; gap: 4px; }
         .form-group label { font-size: 12px; font-weight: bold; color: #475569; }
-        .form-group input, .form-group select { padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-family: 'Cairo'; }
+        .form-group input, .form-group select { padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; font-family: 'Cairo'; }
 
-        .checkbox-group { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0; }
-        .checkbox-label { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .checkbox-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; background: #f8fafc; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .checkbox-label { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: bold; cursor: pointer; }
 
         .btn { background: var(--primary); color: white; border: none; padding: 8px 16px; font-size: 13px; font-weight: bold; border-radius: 6px; cursor: pointer; font-family: 'Cairo'; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 5px; text-decoration: none; }
         .btn:hover { background: var(--primary-hover); }
         .btn-green { background: #2e7d32; }
         .btn-dark { background: #334155; }
         .btn-red { background: #d32f2f; }
-        .btn-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+        .btn-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
 
-        /* منطقة المعاينة والصفحة الواحدة للطباعة */
-        .report-preview-area { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-top: 10px; }
+        .report-preview-area { background: white; padding: 10px; border-radius: 12px; margin-top: 5px; }
         
         .report-single-page { 
             page-break-after: always; 
             break-after: page; 
+            page-break-inside: avoid;
+            break-inside: avoid;
             display: flex; 
             flex-direction: column; 
             justify-content: space-between; 
-            min-height: 92vh; 
-            max-height: 95vh;
-            padding: 5px;
+            height: 98vh;
+            max-height: 98vh;
+            padding: 5px 10px;
+            box-sizing: border-box;
             overflow: hidden;
         }
 
-        .report-header { text-align: center; margin-bottom: 8px; }
-        .report-logo { max-height: 55px; display: block; margin: 0 auto 5px auto; object-fit: contain; }
-        .report-title { font-size: 15px; font-weight: bold; color: #1e293b; }
-        .teacher-info { font-size: 12px; font-weight: bold; color: var(--primary); margin-top: 2px; }
+        .report-header { text-align: center; margin-bottom: 4px; }
+        .report-logo { max-height: 45px; display: block; margin: 0 auto 3px auto; object-fit: contain; }
+        .report-title { font-size: 14px; font-weight: bold; color: #1e293b; }
+        .teacher-info { font-size: 11px; font-weight: bold; color: var(--primary); margin-top: 1px; }
 
-        /* تصغير جدول الدرجات ليناسب صفحة واحدة طولاً وعرضاً */
-        .report-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 11px; }
-        .report-table th, .report-table td { border: 1px solid #cbd5e1; padding: 4px 6px; text-align: center; }
-        .report-table th { background: #f1f5f9; color: #1e293b; font-weight: bold; }
+        .report-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; font-size: 10px; }
+        .report-table th, .report-table td { border: 1px solid #cbd5e1; padding: 2px 4px; text-align: center; line-height: 1.2; }
+        .report-table th { background: #f1f5f9; color: #1e293b; font-weight: bold; font-size: 10.5px; }
 
-        /* جدول التذييل: 5 أعمدة في صف واحد بدون إطار */
-        .footer-table { width: 100%; border-collapse: collapse; margin-top: 10px; border: none !important; }
-        .footer-table td { border: none !important; padding: 4px; text-align: center; vertical-align: top; width: 20%; }
-        .footer-editable-cell { width: 100%; min-height: 45px; background: transparent; border: none; text-align: center; font-family: 'Cairo'; resize: none; outline: none; }
+        /* جدول التذييل الافتراضي (5 أعمدة) دون أي توقيع للموقع */
+        .footer-table { width: 100%; border-collapse: collapse; margin-top: auto; border: none !important; }
+        .footer-table td { border: none !important; padding: 2px; text-align: center; vertical-align: top; width: 20%; }
+        .footer-editable-cell { width: 100%; min-height: 35px; background: transparent; border: none; text-align: center; font-family: 'Cairo'; resize: none; outline: none; line-height: 1.2; }
 
         .hidden { display: none !important; }
 
         @media print {
-            body { background: white; padding: 0; }
-            header, .card:not(#reportOutputCard), .btn-row, .nav-tabs { display: none !important; }
+            @page { size: auto; margin: 5mm; }
+            body { background: white; padding: 0; margin: 0; }
+            header, .card:not(#reportOutputCard), .btn-row, .nav-tabs, footer.author-footer, #reportHeaderTitleCard { display: none !important; }
             .report-preview-area { box-shadow: none; padding: 0; margin: 0; }
-            .report-single-page { page-break-after: always; break-after: page; height: 100vh; max-height: 100vh; }
+            .report-single-page { 
+                page-break-after: always; 
+                break-after: page; 
+                height: 99vh !important; 
+                max-height: 99vh !important;
+                padding: 0;
+            }
         }
     </style>
 </head>
@@ -94,7 +102,6 @@
             <button class="btn btn-red" onclick="logout()">تسجيل الخروج 🚪</button>
         </header>
 
-        <!-- شريط التبويبات العلوي الموحد -->
         <div class="nav-tabs" id="navTabs">
             <a href="adm_students.html" class="tab-btn role-admin-sup">👥 بيانات الطلاب</a>
             <a href="adm_teachers.html" class="tab-btn role-admin-sup">👨‍🏫 إدارة المعلمين</a>
@@ -105,37 +112,34 @@
             <a href="adm_profile.html" class="tab-btn">👤 بياناتي الشخصية</a>
         </div>
 
-        <!-- قسم إعدادات التقارير الافتراضية والتذييل (للمدير فقط) -->
         <div class="card hidden" id="adminSettingsCard">
             <h2>⚙️ إعدادات التقارير الافتراضية والتذييل (خاص بمدير النظام)</h2>
-            <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center; margin-bottom: 12px;">
-                <div class="form-group" style="flex: 1; min-width: 220px;">
+            <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center; margin-bottom: 10px;">
+                <div class="form-group" style="flex: 1; min-width: 200px;">
                     <label>رفع شعار رأس التقرير:</label>
                     <input type="file" id="logoUploadInput" accept="image/*" onchange="handleLogoUpload(event)">
                 </div>
-                <div class="form-group" style="flex: 1; min-width: 200px;">
-                    <label>حجم خط خلايا التذييل الافتراضي:</label>
-                    <select id="footerFontSize" onchange="saveAdminSettings()" style="width: 100%; padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: 'Cairo'; font-size: 13px;">
-                        <option value="10px">صغير جداً (10 بكسل)</option>
-                        <option value="11px" selected>صغير (11 بكسل)</option>
-                        <option value="12px">متوسط (12 بكسل)</option>
-                        <option value="14px">كبير (14 بكسل)</option>
+                <div class="form-group" style="flex: 1; min-width: 180px;">
+                    <label>حجم خط خلايا التذييل:</label>
+                    <select id="footerFontSize" onchange="saveAdminSettings()" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: 'Cairo'; font-size: 12px;">
+                        <option value="9px">صغير جداً (9 بكسل)</option>
+                        <option value="10px" selected>صغير (10 بكسل)</option>
+                        <option value="11px">متوسط (11 بكسل)</option>
+                        <option value="12px">كبير (12 بكسل)</option>
                     </select>
                 </div>
             </div>
 
-            <label style="font-size: 12px; font-weight: bold; color: #475569; display: block; margin-bottom: 5px;">محتوى خانات التذييل الـ 5 الافتراضية:</label>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
-                <input type="text" id="foot1" placeholder="الخانة 1 (مثل: معلم المادة)" oninput="saveAdminSettings()">
-                <input type="text" id="foot2" placeholder="الخانة 2 (مثل: المشرف التربوي)" oninput="saveAdminSettings()">
-                <input type="text" id="foot3" placeholder="الخانة 3 (مثل: مدير المدرسة)" oninput="saveAdminSettings()">
-                <input type="text" id="foot4" placeholder="الخانة 4 (مثل: ختم المدرسة)" oninput="saveAdminSettings()">
-                <input type="text" id="foot5" placeholder="الخانة 5 (مثل: ملاحظات)" oninput="saveAdminSettings()">
+            <label style="font-size: 11px; font-weight: bold; color: #475569; display: block; margin-bottom: 4px;">محتوى خانات التذييل الـ 5 الافتراضية:</label>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px;">
+                <input type="text" id="foot1" placeholder="الخانة 1" oninput="saveAdminSettings()">
+                <input type="text" id="foot2" placeholder="الخانة 2" oninput="saveAdminSettings()">
+                <input type="text" id="foot3" placeholder="الخانة 3" oninput="saveAdminSettings()">
+                <input type="text" id="foot4" placeholder="الخانة 4" oninput="saveAdminSettings()">
+                <input type="text" id="foot5" placeholder="الخانة 5" oninput="saveAdminSettings()">
             </div>
-            <small style="color: #2e7d32; font-weight: bold; font-size: 11px; display: block; margin-top: 6px;">✓ يتم حفظ التعديلات تلقائياً واعتمادها كإعدادات افتراضية لجميع المعلمين.</small>
         </div>
 
-        <!-- قسم فلاتر وتوليد التقرير -->
         <div class="card">
             <h2>🔍 فلاتر إعداد وتوليد التقرير</h2>
             <div class="form-grid">
@@ -150,34 +154,31 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>الفرقة / الشعبة (يمكن اختيار عدة فرق):</label>
-                    <select id="filterSections" multiple style="height: 80px;">
-                        <!-- يتم جلبها ديناميكياً من السحابة -->
-                    </select>
-                    <small style="color: #64748b; font-size: 11px;">اضغط مع الاستمرار على Ctrl لتحديد عدة فرق.</small>
+                    <label>الفرقة / الشعبة:</label>
+                    <select id="filterSections" multiple style="height: 70px;"></select>
                 </div>
                 <div class="form-group">
-                    <label>نطاق الطلاب في التقرير:</label>
+                    <label>نطاق الطلاب:</label>
                     <select id="reportScope">
-                        <option value="active">الطلاب المتفاعلين فقط (الذين لعبوا وتفاعلوا)</option>
-                        <option value="all">جميع الطلاب (من بيانات الطلبة المسجلين كاملاً)</option>
+                        <option value="all">جميع الطلاب (المسجلين بالسجل كاملاً)</option>
+                        <option value="active">الطلاب المتفاعلين فقط</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>اتجاه الصفحة للطباعة:</label>
+                    <label>اتجاه الصفحة:</label>
                     <select id="pageOrientation">
-                        <option value="portrait">عمودي (Portrait)</option>
-                        <option value="landscape" selected>أفقي (Landscape)</option>
+                        <option value="portrait" selected>عمودي (Portrait)</option>
+                        <option value="landscape">أفقي (Landscape)</option>
                     </select>
                 </div>
             </div>
 
-            <div style="margin-top: 10px;">
-                <label style="font-size: 12px; font-weight: bold; color: #475569; display: block; margin-bottom: 4px;">أعمدة التقرير المطلوبة:</label>
+            <div style="margin-top: 8px;">
+                <label style="font-size: 11px; font-weight: bold; color: #475569; display: block; margin-bottom: 3px;">أعمدة التقرير المطلوبة:</label>
                 <div class="checkbox-group">
                     <label class="checkbox-label"><input type="checkbox" class="col-check" value="name" checked> اسم الطالب</label>
                     <label class="checkbox-label"><input type="checkbox" class="col-check" value="cls" checked> الفرقة</label>
-                    <label class="checkbox-label"><input type="checkbox" class="col-check" value="total" checked> مجموع الدرجات</label>
+                    <label class="checkbox-label"><input type="checkbox" class="col-check" value="total" checked> المجموع</label>
                     <label class="checkbox-label"><input type="checkbox" class="col-check" value="rocket" checked> صواريخ الفضاء</label>
                     <label class="checkbox-label"><input type="checkbox" class="col-check" value="goldmine" checked> منجم الذهب</label>
                     <label class="checkbox-label"><input type="checkbox" class="col-check" value="mountain" checked> الصعود للقمة</label>
@@ -193,25 +194,20 @@
             </div>
         </div>
 
-        <!-- قسم عرض نتائج التقرير -->
         <div class="card hidden" id="reportOutputCard">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <h2>📄 معاينة التقرير الجاهز للطباعة</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;" id="reportHeaderTitleCard">
+                <h2 style="border:none; margin:0; padding:0;">خيارات التصدير 📄</h2>
                 <div class="btn-row" style="margin:0;">
                     <button class="btn btn-green" onclick="exportToExcel()">📊 تصدير إلى Excel</button>
                     <button class="btn btn-dark" onclick="window.print()">🖨️ طباعة / حفظ PDF</button>
                 </div>
             </div>
 
-            <div class="report-preview-area" id="reportPreviewContent">
-                <!-- سيتم حقن المحتوى هنا ديناميكياً -->
-            </div>
+            <div class="report-preview-area" id="reportPreviewContent"></div>
         </div>
     </div>
 
-    <footer style="text-align: center; padding: 15px; font-size: 12px; color: #64748b;">
-        إعداد أ. صادق القلعاوي | مدرسة اليرموك الابتدائية للبنين 🏫✨
-    </footer>
+    <!-- تم إزالة توقيع الموقع نهائياً -->
 
     <script>
         let currentUser = null;
@@ -222,7 +218,7 @@
         }
 
         let cloudSections = [];
-        let teachersData = []; // تخزين بيانات المعلمين لجلب اسم معلم الصف
+        let classTeachersAssignments = [];
 
         document.addEventListener('DOMContentLoaded', () => {
             checkUserPermissions();
@@ -251,7 +247,6 @@
             document.getElementById('welcomeTitle').textContent = `تقارير الأداء الشاملة (${currentUser.name || 'مستخدم'} - ${roleName})`;
         }
 
-        // تحميل إعدادات التذييل الافتراضية المخزنة في localStorage
         function loadAdminSettingsToUI() {
             document.getElementById('foot1').value = localStorage.getItem('rep_foot_1') || 'معلم المادة';
             document.getElementById('foot2').value = localStorage.getItem('rep_foot_2') || 'المشرف التربوي';
@@ -263,7 +258,6 @@
             if(savedSize) document.getElementById('footerFontSize').value = savedSize;
         }
 
-        // حفظ إعدادات المدير كافتراضية لجميع المعلمين
         function saveAdminSettings() {
             localStorage.setItem('rep_foot_1', document.getElementById('foot1').value);
             localStorage.setItem('rep_foot_2', document.getElementById('foot2').value);
@@ -273,15 +267,14 @@
             localStorage.setItem('rep_foot_size', document.getElementById('footerFontSize').value);
         }
 
-        // استدعاء الفرق ومعلومات المعلمين من السحابة
         async function fetchCloudData() {
             try {
-                const [stRes, staffRes] = await Promise.all([
+                const [stRes, ctRes] = await Promise.all([
                     supabaseClient.from('students').select('cls'),
-                    supabaseClient.from('staff').select('*')
+                    supabaseClient.from('class_teachers').select('*')
                 ]);
 
-                if (staffRes.data) teachersData = staffRes.data;
+                if (ctRes.data) classTeachersAssignments = ctRes.data;
 
                 let sectionsSet = new Set();
                 if (stRes.data) {
@@ -355,14 +348,13 @@
             }
         }
 
-        // البحث عن معلم الصف المسؤول عن الفرقة بناءً على جدول المعلمين
+        // جلب اسم معلم الصف حصرياً من جدول class_teachers في السحابة
         function getTeacherNameForSection(sec) {
-            let matchedTeacher = teachersData.find(t => {
-                if (!t.classes) return false;
-                let tClasses = t.classes.split(',').map(c => c.trim());
-                return tClasses.includes(sec);
-            });
-            return matchedTeacher ? matchedTeacher.name : 'غير مسند';
+            let foundInCT = classTeachersAssignments.find(item => item.cls === sec);
+            if (foundInCT && foundInCT.teacher_name) {
+                return foundInCT.teacher_name;
+            }
+            return 'غير مسند';
         }
 
         async function generateReport() {
@@ -423,21 +415,22 @@
                     return s;
                 });
 
-                allStudents.sort((a, b) => b.total - a.total);
+                let sortedForRank = [...allStudents].sort((a, b) => b.total - a.total);
 
-                // جلب النصوص الافتراضية للتذييل وحجم الخط
                 let f1 = localStorage.getItem('rep_foot_1') || 'معلم المادة';
                 let f2 = localStorage.getItem('rep_foot_2') || 'المشرف التربوي';
                 let f3 = localStorage.getItem('rep_foot_3') || 'مدير المدرسة';
                 let f4 = localStorage.getItem('rep_foot_4') || 'ختم المدرسة';
                 let f5 = localStorage.getItem('rep_foot_5') || 'ملاحظات';
-                let fSize = localStorage.getItem('rep_foot_size') || '11px';
+                let fSize = localStorage.getItem('rep_foot_size') || '10px';
 
                 let htmlContent = '';
 
                 selectedOptions.forEach((sec) => {
                     let secStudents = allStudents.filter(s => s.cls === sec);
-                    secStudents.sort((a, b) => b.total - a.total);
+
+                    // ترتيب الطلاب أبجدياً
+                    secStudents.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'ar'));
 
                     let teacherName = getTeacherNameForSection(sec);
 
@@ -470,17 +463,18 @@
 
                         htmlContent += `</tr></thead><tbody>`;
 
-                        secStudents.forEach((st, sIdx) => {
-                            let rankSchool = allStudents.findIndex(x => x.name === st.name && x.cls === st.cls) + 1;
-                            let rankSection = sIdx + 1;
+                        secStudents.forEach((st) => {
+                            let rankSchool = sortedForRank.findIndex(x => x.name === st.name && x.cls === st.cls) + 1;
+                            
+                            let sectionRankList = allStudents.filter(x => x.cls === sec).sort((a, b) => b.total - a.total);
+                            let rankSection = sectionRankList.findIndex(x => x.name === st.name && x.cls === st.cls) + 1;
                             
                             let gradePrefix = sec.charAt(0);
-                            let gradeStudents = allStudents.filter(x => x.cls.startsWith(gradePrefix));
-                            gradeStudents.sort((a, b) => b.total - a.total);
+                            let gradeStudents = allStudents.filter(x => x.cls.startsWith(gradePrefix)).sort((a, b) => b.total - a.total);
                             let rankGrade = gradeStudents.findIndex(x => x.name === st.name && x.cls === st.cls) + 1;
 
                             htmlContent += `<tr>`;
-                            if (activeCols.includes('name')) htmlContent += `<td><b>${st.name}</b></td>`;
+                            if (activeCols.includes('name')) htmlContent += `<td style="text-align:right; font-weight:bold; padding-right:6px;">${st.name}</td>`;
                             if (activeCols.includes('cls')) htmlContent += `<td>${st.cls}</td>`;
                             if (activeCols.includes('total')) htmlContent += `<td style="color:var(--primary); font-weight:bold;">⭐ ${st.total}</td>`;
                             if (activeCols.includes('rocket')) htmlContent += `<td>${st.rocket}</td>`;
@@ -496,9 +490,9 @@
                         htmlContent += `</tbody></table>`;
                     }
 
-                    htmlContent += `</div>`; // إغلاق القسم العلوي
+                    htmlContent += `</div>`;
 
-                    // جدول التذييل: 5 أعمدة في صف واحد بدون إطار مع النصوص الافتراضية وحجم الخط المحدد
+                    // جدول التذييل الـ 5 المخصص
                     htmlContent += `
                         <table class="footer-table">
                             <tr>
@@ -511,7 +505,7 @@
                         </table>
                     `;
 
-                    htmlContent += `</div>`; // إغلاق الحاوية الرئيسية للصفحة الواحدة
+                    htmlContent += `</div>`;
                 });
 
                 container.innerHTML = htmlContent;
