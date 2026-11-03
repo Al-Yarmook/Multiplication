@@ -54,6 +54,7 @@
             <a href="adm_teachers.html" class="tab-btn">👨‍🏫 إدارة المعلمين</a>
             <a href="adm_games.html" class="tab-btn active">🎮 إعدادات الألعاب</a>
             <a href="adm_scores.html" class="tab-btn">📊 درجات الطلاب</a>
+            <a href="adm_reports.html" class="tab-btn">📈 التقارير الشاملة</a>
             <a href="adm_reset.html" class="tab-btn admin-only-tab">⚙️ تصفير النتائج</a>
             <a href="adm_profile.html" class="tab-btn">👤 بياناتي الشخصية</a>
         </div>
@@ -146,8 +147,11 @@
             <div class="game-sub-section">
                 <h3>🐍 إعدادات لعبة "الحية والدرج"</h3>
                 <div class="form-row">
+                    <div class="form-group"><label>عدد مراحل/مربعات اللوحة:</label><input type="number" id="snakeTotalStages" value="50" min="10" max="100"></div>
                     <div class="form-group"><label>نقاط الإجابة الصحيحة:</label><input type="number" id="snakeCorrectPoints" value="50" min="10"></div>
                     <div class="form-group"><label>نقاط الخصم للإجابة الخاطئة:</label><input type="number" id="snakeWrongPenalty" value="20" min="0"></div>
+                </div>
+                <div class="form-row">
                     <div class="form-group"><label>مكافأة صعود السلم:</label><input type="number" id="snakeLadderBonus" value="100" min="10"></div>
                     <div class="form-group"><label>عقوبة ابتلاع الثعبان:</label><input type="number" id="snakeBitePenalty" value="50" min="0"></div>
                 </div>
@@ -257,6 +261,7 @@
                 const { data } = await supabaseClient.from('game_settings').select('value').eq('key', 'snake_game_settings').single();
                 if(data && data.value) {
                     const s = data.value;
+                    document.getElementById('snakeTotalStages').value = s.totalStages || 50;
                     document.getElementById('snakeCorrectPoints').value = s.correctPoints || 50;
                     document.getElementById('snakeWrongPenalty').value = s.wrongPenalty || 20;
                     document.getElementById('snakeLadderBonus').value = s.ladderBonus || 100;
@@ -362,6 +367,7 @@
             if(!isProd && isMiss) qTypeStr = 'missing';
 
             const settings = {
+                totalStages: parseInt(document.getElementById('snakeTotalStages').value) || 50,
                 correctPoints: parseInt(document.getElementById('snakeCorrectPoints').value) || 50,
                 wrongPenalty: parseInt(document.getElementById('snakeWrongPenalty').value) || 20,
                 ladderBonus: parseInt(document.getElementById('snakeLadderBonus').value) || 100,
