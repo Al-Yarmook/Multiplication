@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>لعبة الحية والدرج - ملك جدول الضرب</title>
+    <title>لعبة الحية والسلم - ملك جدول الضرب</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="config.js"></script>
@@ -19,24 +19,34 @@
         * { touch-action: manipulation; box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; user-select: none; }
         body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 10px; overflow-x: hidden; }
 
-        .game-container { max-width: 550px; width: 100%; background: white; border-radius: 15px; padding: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); display: flex; flex-direction: column; align-items: center; position: relative; border-top: 5px solid var(--primary); }
+        .game-container { max-width: 600px; width: 100%; background: white; border-radius: 15px; padding: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); display: flex; flex-direction: column; align-items: center; position: relative; border-top: 5px solid var(--primary); }
 
         .hud { display: flex; justify-content: space-between; width: 100%; font-size: 13px; font-weight: bold; background: #f8fafc; padding: 8px 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #e2e8f0; }
         .hud span { color: var(--primary); }
 
-        .board-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; width: 100%; max-width: 400px; background: #334155; padding: 6px; border-radius: 10px; margin-bottom: 10px; box-shadow: inset 0 2px 8px rgba(0,0,0,0.3); }
-        .cell { background: #f8fafc; aspect-ratio: 1; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; position: relative; border: 1px solid #cbd5e1; }
+        .board-wrapper { position: relative; width: 100%; max-width: 450px; margin-bottom: 10px; }
+        .board-grid { display: grid; gap: 4px; width: 100%; background: #334155; padding: 6px; border-radius: 10px; box-shadow: inset 0 2px 8px rgba(0,0,0,0.3); position: relative; z-index: 2; }
+        
+        #boardCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
+
+        .cell { background: #f8fafc; aspect-ratio: 1; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 16px; font-weight: 900; position: relative; border: 1px solid #cbd5e1; color: #334155; }
         .cell.ladder { background: #dcfce7; border-color: #86efac; color: #16a34a; }
         .cell.snake { background: #fee2e2; border-color: #fca5a5; color: #dc2626; }
-        .player-token { position: absolute; font-size: 22px; z-index: 5; transition: 0.3s ease-in-out; }
+        .player-token { position: absolute; font-size: 24px; z-index: 10; transition: transform 0.25s ease-in-out, left 0.25s ease-in-out, top 0.25s ease-in-out; }
+        .player-token.face-left { transform: scaleX(-1); }
 
         .dice-section { display: flex; align-items: center; gap: 15px; margin-bottom: 10px; }
         .dice-box { width: 55px; height: 55px; background: white; border: 3px solid var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 900; color: var(--primary); box-shadow: 0 4px 10px rgba(216,27,96,0.2); cursor: pointer; transition: 0.2s; }
         .dice-box.rolling { animation: shake 0.4s infinite; }
+        .dice-box.big-overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(2.5); z-index: 150; box-shadow: 0 10px 30px rgba(0,0,0,0.4); background: white; }
+        
         @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(-10deg); } 50% { transform: rotate(10deg); } 100% { transform: rotate(0deg); } }
 
-        .question-card { background: #ffffff; border: 2px solid var(--primary); padding: 12px; width: 100%; max-width: 420px; text-align: center; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 10px; }
-        .q-title { font-size: 13px; font-weight: bold; color: #64748b; margin-bottom: 5px; }
+        .question-card { background: #ffffff; border: 2px solid var(--primary); padding: 12px; width: 100%; max-width: 420px; text-align: center; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 10px; position: relative; }
+        .question-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .mini-dice { width: 35px; height: 35px; border: 2px solid var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; color: var(--primary); background: #fff; }
+
+        .q-title { font-size: 13px; font-weight: bold; color: #64748b; }
         .q-box { font-size: 24px; font-weight: 900; color: var(--primary); margin-bottom: 10px; }
 
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; max-width: 400px; }
@@ -61,6 +71,10 @@
         .modal h1 { color: var(--primary); font-size: 24px; margin-bottom: 12px; }
         .instructions-box { background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #cbd5e1; text-align: right; margin-bottom: 15px; width: 100%; max-width: 420px; font-size: 13px; line-height: 1.5; }
         
+        .results-table { width: 100%; max-width: 420px; margin-bottom: 15px; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1; font-size: 13px; }
+        .results-table th, .results-table td { padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: center; }
+        .results-table th { background: #f1f5f9; color: var(--primary); }
+
         .btn { background: var(--primary); color: white; border: none; padding: 10px 25px; font-size: 15px; font-weight: bold; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; transition: 0.3s; text-decoration: none; display: inline-block; }
         .btn:hover { background: var(--primary-hover); transform: translateY(-2px); }
         .btn-dark { background: #334155; }
@@ -72,13 +86,12 @@
     <div class="game-container">
         <!-- شاشة التعليمات -->
         <div class="modal" id="instructionsModal">
-            <h1>🐍 تعليمات لعبة الحية والدرج الرياضية</h1>
+            <h1>🐍 تعليمات لعبة الحية والسلم الرياضية</h1>
             <div class="instructions-box">
                 <ul>
-                    <li>🎲 <b>رمي النرد:</b> انقر على النرد للتحرك، وسيظهر سؤال رياضيات مختلط <b>مع خيارات</b>.</li>
-                    <li>🪜 <b>السلالم والثعابين:</b> عند مواجهة سلم أو ثعبان، سيظهر سؤال رياضيات مختلط <b>بدون خيارات (اكتب الإجابة)</b>.</li>
-                    <li>⭐ <b>النقاط:</b> الإجابة الصحيحة تمنحك نقاطاً، والخاطئة تخصم منك درجات. صعود السلم يمنحك مكافأة، والثعبان يخصم منك عند الخطأ!</li>
-                    <li>⏱️ <b>الفوز:</b> الترتيب يعتمد على <b>أكبر عدد من النقاط أولاً، ثم أسرع وقت وصولاً للنهاية</b>.</li>
+                    <li>🎲 <b>رمي النرد:</b> انقر على النرد للتحرك، وسيتوسط الشاشة مكبراً ثم يظهر السؤال مع خيارات.</li>
+                    <li>🪜 <b>السلالم والثعابين:</b> امتدادات رسومية دقيقة تربط مربعات الصعود والهبوط المتغيرة في كل جولة!</li>
+                    <li>⭐ <b>النقاط والوقت:</b> الحساب بالدقائق والثواني، وترتيب النتائج دقيق وموثق تلقائياً.</li>
                 </ul>
             </div>
             <button class="btn" onclick="startSnakeGame()">ابدأ التحدي الآن 🚀</button>
@@ -88,12 +101,15 @@
         <div class="hud">
             <div>البطل: <span id="playerName">بطل</span></div>
             <div>⭐ النقاط: <span id="scoreVal">٠</span></div>
-            <div>⏱️ الوقت: <span id="timerVal">٠</span>ث</div>
-            <div>📍 المربع: <span id="posVal">١</span> / ٢٥</div>
+            <div>⏱️ الوقت: <span id="timerVal">٠٠:٠٠</span></div>
+            <div>📍 المربع: <span id="posVal">١</span> / <span id="maxPosVal">٢٥</span></div>
         </div>
 
-        <!-- لوحة مربعات اللعبة -->
-        <div class="board-grid" id="boardGrid"></div>
+        <!-- لوحة مربعات اللعبة والكانفاس للسلالم والحيات -->
+        <div class="board-wrapper">
+            <div class="board-grid" id="boardGrid"></div>
+            <canvas id="boardCanvas"></canvas>
+        </div>
 
         <!-- منطقة النرد والأسئلة -->
         <div id="gamePlayArea" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
@@ -104,13 +120,14 @@
 
             <!-- كرت الأسئلة -->
             <div class="question-card hidden" id="questionCard">
-                <div class="q-title" id="qTitle">سؤال جديد</div>
+                <div class="question-header">
+                    <div class="q-title" id="qTitle">سؤال جديد</div>
+                    <div class="mini-dice" id="miniDice">🎲</div>
+                </div>
                 <div class="q-box" id="qBox">? × ? = ?</div>
                 
-                <!-- خيارات للأسئلة العادية -->
                 <div class="options-grid hidden" id="optionsGrid"></div>
 
-                <!-- لوحة أرقام للسلالم والثعابين -->
                 <div class="hidden" id="keypadArea" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
                     <div class="answer-display" id="ansDisplay">_</div>
                     <div class="keypad-grid">
@@ -142,11 +159,20 @@
             <button class="btn" onclick="closeEventOverlay()">متابعة اللعب 🚀</button>
         </div>
 
-        <!-- شاشة النهاية والفوز -->
+        <!-- شاشة النهاية والفوز والنتائج -->
         <div class="modal hidden" id="gameOverModal">
             <h1>🎉 مبروك الوصول للنهاية! 🏆</h1>
-            <p id="finalScoreText" style="margin-bottom: 15px; font-size: 16px;"></p>
-            <p id="saveStatus" style="color: var(--primary); font-size: 13px; margin-bottom: 15px;"></p>
+            <p id="finalScoreText" style="margin-bottom: 10px; font-size: 15px;"></p>
+            <p id="saveStatus" style="color: var(--primary); font-size: 12px; margin-bottom: 10px;"></p>
+            
+            <h3 style="font-size: 14px; margin-bottom: 5px; color: #334155;">📊 جدول لوحة الشرف للابطال</h3>
+            <table class="results-table" id="resultsTable">
+                <thead>
+                    <tr><th>البطل</th><th>النقاط</th><th>الوقت</th></tr>
+                </thead>
+                <tbody id="resultsBody"></tbody>
+            </table>
+
             <div style="display: flex; gap: 10px;">
                 <button class="btn" onclick="startSnakeGame()">لعب من جديد 🔄</button>
                 <a href="index.html" class="btn btn-dark">الرئيسية 🏠</a>
@@ -167,7 +193,13 @@
                 const gain = ctx.createGain();
                 osc.connect(gain); gain.connect(ctx.destination);
 
-                if (type === 'dice') {
+                if (type === 'step') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, ctx.currentTime);
+                    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+                    osc.start(); osc.stop(ctx.currentTime + 0.08);
+                } else if (type === 'dice') {
                     osc.type = 'triangle';
                     osc.frequency.setValueAtTime(300, ctx.currentTime);
                     osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.2);
@@ -204,8 +236,8 @@
             return String(num).replace(/\d/g, (d) => arabicNumbers[d]);
         }
 
-        // إعدادات افتراضية قابلة للتعديل من لوحة المدير
         let snakeSettings = {
+            maxSquares: 25,
             correctPoints: 50,
             wrongPenalty: 20,
             ladderBonus: 100,
@@ -219,46 +251,136 @@
             } catch (e) {}
         }
 
-        loadSnakeSettings();
-
         let currentPosition = 1;
         let score = 0, gameTime = 0, timerInterval = null;
         let ladders = {}, snakes = {};
         let currentPuzzle = null;
         let currentInput = "";
         let pendingTargetPosition = 1;
+        let currentDiceVal = 1;
 
         function generateBoardHazards() {
-            ladders = { 3: 11, 7: 18, 14: 22 };
-            snakes = { 16: 5, 20: 9, 24: 13 };
+            ladders = {};
+            snakes = {};
+            let max = snakeSettings.maxSquares;
+            
+            // توزيع نسبي ذكي للسلالم والثعابين حسب عدد المراحل
+            let count = max >= 50 ? 5 : 3;
+            let available = [];
+            for(let i=2; i<max-3; i++) available.push(i);
+            available.sort(() => Math.random() - 0.5);
+
+            for(let i=0; i<count && available.length > 0; i++) {
+                let start = available.pop();
+                let end = start + Math.floor(Math.random() * 6) + 4;
+                if(end < max) ladders[start] = end;
+            }
+
+            for(let i=0; i<count && available.length > 0; i++) {
+                let start = available.pop();
+                let end = start - (Math.floor(Math.random() * 5) + 3);
+                if(end > 1) snakes[start] = end;
+            }
         }
 
         function buildBoardUI() {
+            const max = snakeSettings.maxSquares;
+            document.getElementById('maxPosVal').textContent = toArabicNum(max);
             const grid = document.getElementById('boardGrid');
             grid.innerHTML = '';
-            for (let i = 25; i >= 1; i--) {
-                const cell = document.createElement('div');
-                cell.className = 'cell';
-                cell.id = `cell-${i}`;
-                let label = toArabicNum(i);
-                if (ladders[i]) label += ' 🪜';
-                if (snakes[i]) label += ' 🐍';
-                cell.innerHTML = `<span>${label}</span>`;
-                grid.appendChild(cell);
+            
+            let cols = 5;
+            let rows = Math.ceil(max / cols);
+            grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
+            // بناء الشبكة بنظام متعرج (Boustrophedon): صف يمين لليسار، صف يسار ليمين
+            for (let r = rows - 1; r >= 0; r--) {
+                let rowCells = [];
+                for (let c = 0; c < cols; c++) {
+                    let cellNum;
+                    if (r % 2 === 0) {
+                        cellNum = r * cols + (c + 1); // من اليمين لليسار في الأسطر الفردية (0, 2...)
+                    } else {
+                        cellNum = r * cols + (cols - c); // من اليسار لليمين في الأسطر الزوجية (1, 3...)
+                    }
+                    if (cellNum <= max) rowCells.push(cellNum);
+                }
+                rowCells.forEach(i => {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.id = `cell-${i}`;
+                    let label = toArabicNum(i);
+                    if (ladders[i]) label += ' 🪜';
+                    if (snakes[i]) label += ' 🐍';
+                    cell.innerHTML = `<span>${label}</span>`;
+                    grid.appendChild(cell);
+                });
             }
             updatePlayerToken();
+            setTimeout(drawBoardLines, 50);
         }
 
-        function updatePlayerToken() {
+        function drawBoardLines() {
+            const canvas = document.getElementById('boardCanvas');
+            const wrapper = document.querySelector('.board-wrapper');
+            canvas.width = wrapper.clientWidth;
+            canvas.height = wrapper.clientHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.lineWidth = 4;
+            ctx.lineCap = 'round';
+
+            // رسم السلالم
+            for (let start in ladders) {
+                let end = ladders[start];
+                let sEl = document.getElementById(`cell-${start}`);
+                let eEl = document.getElementById(`cell-${end}`);
+                if(sEl && eEl) {
+                    let x1 = sEl.offsetLeft + sEl.offsetWidth / 2;
+                    let y1 = sEl.offsetTop + sEl.offsetHeight / 2;
+                    let x2 = eEl.offsetLeft + eEl.offsetWidth / 2;
+                    let y2 = eEl.offsetTop + eEl.offsetHeight / 2;
+
+                    ctx.strokeStyle = '#16a34a';
+                    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+                }
+            }
+
+            // رسم الثعابين
+            for (let start in snakes) {
+                let end = snakes[start];
+                let sEl = document.getElementById(`cell-${start}`);
+                let eEl = document.getElementById(`cell-${end}`);
+                if(sEl && eEl) {
+                    let x1 = sEl.offsetLeft + sEl.offsetWidth / 2;
+                    let y1 = sEl.offsetTop + sEl.offsetHeight / 2;
+                    let x2 = eEl.offsetLeft + eEl.offsetWidth / 2;
+                    let y2 = eEl.offsetTop + eEl.offsetHeight / 2;
+
+                    ctx.strokeStyle = '#dc2626';
+                    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+                }
+            }
+        }
+
+        function updatePlayerToken(customPos = currentPosition) {
             document.querySelectorAll('.player-token').forEach(el => el.remove());
-            const targetCell = document.getElementById(`cell-${currentPosition}`);
+            const targetCell = document.getElementById(`cell-${customPos}`);
             if (targetCell) {
                 const token = document.createElement('div');
                 token.className = 'player-token';
                 token.textContent = '🏃‍♂️';
+                
+                // تحديد اتجاه وجه اللاعب حسب اتجاه الحركة في الصف (متعرج)
+                let cols = 5;
+                let rowIndex = Math.floor((customPos - 1) / cols);
+                if (rowIndex % 2 !== 0) {
+                    token.classList.add('face-left'); // يواجه اليسار في السطور الزوجية
+                }
                 targetCell.appendChild(token);
             }
-            document.getElementById('posVal').textContent = toArabicNum(currentPosition);
+            document.getElementById('posVal').textContent = toArabicNum(customPos);
             document.getElementById('scoreVal').textContent = toArabicNum(score);
         }
 
@@ -268,13 +390,18 @@
             currentPosition = 1;
             score = 0;
             gameTime = 0;
-            generateBoardHazards();
-            buildBoardUI();
+            loadSnakeSettings().then(() => {
+                generateBoardHazards();
+                buildBoardUI();
+            });
 
             if (timerInterval) clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 gameTime++;
-                document.getElementById('timerVal').textContent = toArabicNum(gameTime);
+                let mins = Math.floor(gameTime / 60);
+                let secs = gameTime % 60;
+                let timeStr = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                document.getElementById('timerVal').textContent = toArabicNum(timeStr);
             }, 1000);
 
             showDiceSection();
@@ -288,19 +415,22 @@
         function rollDice() {
             playAudioEffect('dice');
             const diceBox = document.getElementById('diceBox');
-            diceBox.classList.add('rolling');
+            diceBox.classList.add('rolling', 'big-overlay');
 
             setTimeout(() => {
                 diceBox.classList.remove('rolling');
-                let diceRoll = Math.floor(Math.random() * 3) + 1;
-                diceBox.textContent = toArabicNum(diceRoll);
-                
-                pendingTargetPosition = Math.min(25, currentPosition + diceRoll);
-                generateMixedQuestion('dice', pendingTargetPosition);
+                currentDiceVal = Math.floor(Math.random() * 3) + 1;
+                diceBox.textContent = toArabicNum(currentDiceVal);
+
+                setTimeout(() => {
+                    diceBox.classList.remove('big-overlay');
+                    document.getElementById('miniDice').textContent = toArabicNum(currentDiceVal);
+                    pendingTargetPosition = Math.min(snakeSettings.maxSquares, currentPosition + currentDiceVal);
+                    generateMixedQuestion('dice', pendingTargetPosition);
+                }, 800);
             }, 600);
         }
 
-        // توليد سؤال مختلط (إما إيجاد الناتج أو العامل المفقود)
         function generateMixedQuestion(contextType, targetPosOrHazard) {
             document.getElementById('diceSection').classList.add('hidden');
             document.getElementById('questionCard').classList.remove('hidden');
@@ -312,7 +442,6 @@
             let correctAns = 0;
 
             if (contextType === 'dice') {
-                // الأسئلة العادية (تتضمن خيارات)
                 document.getElementById('optionsGrid').classList.remove('hidden');
                 document.getElementById('keypadArea').classList.add('hidden');
                 document.getElementById('qTitle').textContent = `سؤال التقدم إلى المربع ${toArabicNum(targetPosOrHazard)}`;
@@ -350,7 +479,6 @@
                 });
 
             } else {
-                // أسئلة السلالم والثعابين (بدون خيارات، كتابة يدوية)
                 document.getElementById('optionsGrid').classList.add('hidden');
                 document.getElementById('keypadArea').classList.remove('hidden');
 
@@ -375,14 +503,35 @@
             }
         }
 
+        // الحركة خطوة بخطوة مع مؤثر صوتي لكل خطوة
+        function animatePlayerSteps(fromPos, toPos, callback) {
+            let step = fromPos < toPos ? 1 : -1;
+            let current = fromPos;
+
+            function nextStep() {
+                if (current !== toPos) {
+                    current += step;
+                    currentPosition = current;
+                    updatePlayerToken(current);
+                    playAudioEffect('step');
+                    setTimeout(nextStep, 200);
+                } else {
+                    if (callback) callback();
+                }
+            }
+            nextStep();
+        }
+
         function checkDiceAnswer(selected, correct, targetPos) {
             if (selected === correct) {
                 playAudioEffect('correct');
                 confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
                 score += snakeSettings.correctPoints;
-                currentPosition = targetPos;
-                updatePlayerToken();
-                checkCellHazards();
+                
+                // الانتقال خطوة بخطوة نحو المربع المستهدف
+                animatePlayerSteps(currentPosition, targetPos, () => {
+                    checkCellHazards();
+                });
             } else {
                 playAudioEffect('wrong');
                 score = Math.max(0, score - snakeSettings.wrongPenalty);
@@ -393,7 +542,7 @@
         }
 
         function checkCellHazards() {
-            if (currentPosition === 25) {
+            if (currentPosition >= snakeSettings.maxSquares) {
                 endGameWin();
                 return;
             }
@@ -438,9 +587,9 @@
                 if (type === 'ladder') {
                     playAudioEffect('ladder');
                     score += snakeSettings.ladderBonus;
-                    currentPosition = target;
-                    updatePlayerToken();
-                    showEventOverlay('🪜 تسلقت السلم بنجاح!', `أجبت بشكل صحيح، صعدت للأعلى وربحت مكافأة +${toArabicNum(snakeSettings.ladderBonus)} نقطة!`, '🥳');
+                    animatePlayerSteps(currentPosition, target, () => {
+                        showEventOverlay('🪜 تسلقت السلم بنجاح!', `أجبت بشكل صحيح، صعدت للأعلى وربحت مكافأة +${toArabicNum(snakeSettings.ladderBonus)} نقطة!`, '🥳');
+                    });
                 } else {
                     score += snakeSettings.correctPoints;
                     updatePlayerToken();
@@ -455,9 +604,9 @@
                     showDiceSection();
                 } else {
                     score = Math.max(0, score - snakeSettings.snakePenalty);
-                    currentPosition = target;
-                    updatePlayerToken();
-                    showEventOverlay('🐍 التهمك الثعبان!', `إجابة خاطئة جعلتك تنزل للأسفل وخسارة ${toArabicNum(snakeSettings.snakePenalty)} نقطة!`, '💥');
+                    animatePlayerSteps(currentPosition, target, () => {
+                        showEventOverlay('🐍 التهمك الثعبان!', `إجابة خاطئة جعلتك تنزل للأسفل وخسارة ${toArabicNum(snakeSettings.snakePenalty)} نقطة!`, '💥');
+                    });
                 }
             }
         }
@@ -473,7 +622,7 @@
 
         function closeEventOverlay() {
             document.getElementById('eventOverlay').classList.add('hidden');
-            if (currentPosition === 25) {
+            if (currentPosition >= snakeSettings.maxSquares) {
                 endGameWin();
             } else {
                 showDiceSection();
@@ -485,17 +634,42 @@
             confetti({ particleCount: 150, spread: 100, origin: { y: 0.4 } });
             const modal = document.getElementById('gameOverModal');
             modal.classList.remove('hidden');
-            document.getElementById('finalScoreText').textContent = `أحسنت يا ${studentData.name}! حققت ${toArabicNum(score)} نقطة بزمن قدره: ${toArabicNum(gameTime)} ثانية.`;
-            document.getElementById('saveStatus').textContent = 'جاري حفظ النتيجة بالسحابة...';
+            
+            let mins = Math.floor(gameTime / 60);
+            let secs = gameTime % 60;
+            let timeStr = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+            document.getElementById('finalScoreText').textContent = `أحسنت يا ${studentData.name}! حققت ${toArabicNum(score)} نقطة بزمن: ${toArabicNum(timeStr)}`;
+            document.getElementById('saveStatus').textContent = 'جاري حفظ النتيجة وجلب لوحة الشرف...';
 
             try {
-                // الحفظ بقاعدة البيانات وترتيب النتائج بناءً على النقاط أولاً ثم الوقت الأقل
                 await supabaseClient.from('snake_scores').insert([{
                     student_name: studentData.name, cls: studentData.cls, points: score, weekly_points: gameTime
                 }]);
+                
+                // جلب وترتيب نتائج الطلاب لعرضها في الجدول
+                const { data: topScores } = await supabaseClient.from('snake_scores')
+                    .select('student_name, points, weekly_points')
+                    .order('points', { ascending: false })
+                    .order('weekly_points', { ascending: true })
+                    .limit(5);
+
+                const tbody = document.getElementById('resultsBody');
+                tbody.innerHTML = '';
+                if (topScores && topScores.length > 0) {
+                    topScores.forEach(row => {
+                        let rmins = Math.floor(row.weekly_points / 60);
+                        let rsecs = row.weekly_points % 60;
+                        let rtimeStr = `${String(rmins).padStart(2, '0')}:${String(rsecs).padStart(2, '0')}`;
+                        
+                        let tr = document.createElement('tr');
+                        tr.innerHTML = `<td>${row.student_name}</td><td>⭐ ${toArabicNum(row.points)}</td><td>⏱️ ${toArabicNum(rtimeStr)}</td>`;
+                        tbody.appendChild(tr);
+                    });
+                }
                 document.getElementById('saveStatus').textContent = '✅ تم حفظ النتيجة بنجاح!';
             } catch (e) {
-                document.getElementById('saveStatus').textContent = '⚠️ تعذر حفظ النتيجة.';
+                document.getElementById('saveStatus').textContent = '⚠️ تم حفظ النتيجة محلياً (تعذر الاتصال بالسحابة).';
             }
         }
 
