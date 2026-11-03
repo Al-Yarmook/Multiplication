@@ -112,36 +112,13 @@
             </div>
         </div>
 
-        <!-- جدول توزيع المعلمين على فرق المدرسة -->
+        <!-- 1. جدول بيانات المعلمين (staff) في الأعلى -->
         <div class="section-card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
-                <h2 style="margin:0;">🏫 توزيع المعلمين على فرق المدرسة</h2>
-                <!-- زر حفظ توزيع الصفوف المستقل -->
-                <button class="btn btn-green" onclick="saveClassAssignmentsInCloud()" style="font-size: 14px; padding: 8px 18px;">💾 حفظ وتحديث توزيع الصفوف في السحابة</button>
-            </div>
-            <p style="color: #64748b; font-size: 13px; margin-bottom: 10px;">قم بتحديد معلم كل فرقة دراسية، ثم اضغط على زر الحفظ أعلاه لمزامنة الصلاحيات والصفوف.</p>
-            
-            <table id="classTeachersTable">
-                <thead>
-                    <tr>
-                        <th>الفرقة / الصف الدراسية</th>
-                        <th>عدد الطلاب المسجلين بالسحابة</th>
-                        <th>المعلم المسند للفرقة</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td colspan="3" style="text-align:center;">جاري جلب الفرق والطلاب...</td></tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- جدول عرض وتعديل بيانات المعلمين مباشرة مع زر حفظ موحد -->
-        <div class="section-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
-                <h2 style="margin:0;">📋 قائمة المعلمين والمشرفين (تعديل مباشر)</h2>
+                <h2 style="margin:0;">📋 جدول بيانات المعلمين والمشرفين (table: staff)</h2>
                 <button class="btn btn-green" onclick="saveStaffEditsInCloud()" style="font-size: 14px; padding: 8px 18px;">💾 حفظ تعديلات بيانات المعلمين</button>
             </div>
-            <p style="color: #64748b; font-size: 13px; margin-bottom: 10px;">قم بالتعديل على حقول المعلمين مباشرة أدناه، ثم اضغط زر حفظ تعديلات المعلمين.</p>
+            <p style="color: #64748b; font-size: 13px; margin-bottom: 10px;">قم بالتعديل على الحقول مباشرة، ثم اضغط زر الحفظ الخاص ببيانات المعلمين.</p>
             
             <table id="staffTable">
                 <thead>
@@ -156,6 +133,28 @@
                 </thead>
                 <tbody>
                     <tr><td colspan="6" style="text-align:center;">جاري جلب المعلمين...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 2. جدول توزيع المعلمين على الصفوف (class_teachers) في الأسفل -->
+        <div class="section-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
+                <h2 style="margin:0;">🏫 جدول توزيع المعلمين على الصفوف (table: class_teachers)</h2>
+                <button class="btn btn-green" onclick="saveClassAssignmentsInCloud()" style="font-size: 14px; padding: 8px 18px;">💾 حفظ وتحديث توزيع الصفوف في السحابة</button>
+            </div>
+            <p style="color: #64748b; font-size: 13px; margin-bottom: 10px;">هذا الجدول مستقل تماماً ويقوم بمزامنة ارتباط الصف بالمعلم في جدول <code>class_teachers</code> بالسحابة.</p>
+            
+            <table id="classTeachersTable">
+                <thead>
+                    <tr>
+                        <th>الفرقة / الصف الدراسية</th>
+                        <th>عدد الطلاب المسجلين</th>
+                        <th>المعلم المسند للفرقة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="3" style="text-align:center;">جاري جلب الفرق والطلاب...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -189,11 +188,11 @@
 
         async function loadAllData() {
             try {
-                // 1. جلب المعلمين والمشرفين من جدول staff
+                // 1. جلب حسابات المعلمين من جدول staff
                 const staffRes = await supabaseClient.from('staff').select('*');
                 allStaffList = staffRes.data || [];
 
-                // 2. جلب جميع الصفوف من جدول الطلاب لاستخراج جميع الفرق
+                // 2. جلب الفرق من جدول الطلاب
                 const studentsRes = await supabaseClient.from('students').select('cls');
                 let sectionsMap = {};
                 if (studentsRes.data) {
@@ -207,7 +206,7 @@
                     sortedSections = ['3ب1', '3ب2', '4ب1', '4ب2', '5ب1', '5ب2', '6ب1', '6ب2'];
                 }
 
-                // 3. جلب التعيينات المخزنة في جدول class_teachers
+                // 3. جلب التعيينات حصرياً من الجدول المنفصل class_teachers في السحابة
                 const assignmentsRes = await supabaseClient.from('class_teachers').select('*');
                 let assignedMap = {};
                 if (assignmentsRes.data) {
@@ -216,7 +215,37 @@
                     });
                 }
 
-                // تعبئة جدول توزيع المعلمين على الفرق
+                // تعبئة جدول بيانات المعلمين (staff) في الأعلى
+                const staffTbody = document.querySelector('#staffTable tbody');
+                staffTbody.innerHTML = '';
+                if (allStaffList.length === 0) {
+                    staffTbody.innerHTML = `<tr><td colspan="6" style="color:red;">لا توجد بيانات مسجلة للمعلمين.</td></tr>`;
+                } else {
+                    allStaffList.forEach(st => {
+                        let staffId = st.id || st.cpr;
+                        staffTbody.innerHTML += `
+                            <tr data-staff-id="${staffId}">
+                                <td><input type="text" class="edit-name" value="${st.name || ''}" style="width:100%;"></td>
+                                <td><input type="text" class="edit-username" value="${st.username || ''}" style="width:100%;"></td>
+                                <td><input type="text" class="edit-cpr" value="${st.cpr || ''}" style="width:100%;"></td>
+                                <td><input type="email" class="edit-email" value="${st.email || ''}" style="width:100%;"></td>
+                                <td>
+                                    <select class="edit-role" style="width:100%;">
+                                        <option value="Teacher" ${st.role === 'Teacher' ? 'selected' : ''}>معلم</option>
+                                        <option value="Supervisor" ${st.role === 'Supervisor' ? 'selected' : ''}>مشرف</option>
+                                        <option value="Admin" ${st.role === 'Admin' ? 'selected' : ''}>مدير</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <button class="btn btn-purple" style="padding:4px 8px; font-size:11px;" onclick="changeStaffPassword('${staffId}', '${st.name}')">🔑 كلمة المرور</button>
+                                    <button class="btn btn-red" style="padding:4px 8px; font-size:11px;" onclick="deleteStaff('${staffId}')">حذف 🗑️</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                // تعبئة جدول توزيع المعلمين على الصفوف في الأسفل
                 const classTbody = document.querySelector('#classTeachersTable tbody');
                 classTbody.innerHTML = '';
                 sortedSections.forEach(sec => {
@@ -242,43 +271,38 @@
                     `;
                 });
 
-                // تعبئة جدول التعديل المباشر للمعلمين
-                const staffTbody = document.querySelector('#staffTable tbody');
-                staffTbody.innerHTML = '';
-                if (allStaffList.length === 0) {
-                    staffTbody.innerHTML = `<tr><td colspan="6" style="color:red;">لا توجد بيانات مسجلة للمعلمين.</td></tr>`;
-                    return;
-                }
-
-                allStaffList.forEach(st => {
-                    let staffId = st.id || st.cpr;
-                    staffTbody.innerHTML += `
-                        <tr data-staff-id="${staffId}">
-                            <td><input type="text" class="edit-name" value="${st.name || ''}" style="width:100%;"></td>
-                            <td><input type="text" class="edit-username" value="${st.username || ''}" style="width:100%;"></td>
-                            <td><input type="text" class="edit-cpr" value="${st.cpr || ''}" style="width:100%;"></td>
-                            <td><input type="email" class="edit-email" value="${st.email || ''}" style="width:100%;"></td>
-                            <td>
-                                <select class="edit-role" style="width:100%;">
-                                    <option value="Teacher" ${st.role === 'Teacher' ? 'selected' : ''}>معلم</option>
-                                    <option value="Supervisor" ${st.role === 'Supervisor' ? 'selected' : ''}>مشرف</option>
-                                    <option value="Admin" ${st.role === 'Admin' ? 'selected' : ''}>مدير</option>
-                                </select>
-                            </td>
-                            <td>
-                                <button class="btn btn-purple" style="padding:4px 8px; font-size:11px;" onclick="changeStaffPassword('${staffId}', '${st.name}')">🔑 كلمة المرور</button>
-                                <button class="btn btn-red" style="padding:4px 8px; font-size:11px;" onclick="deleteStaff('${staffId}')">حذف 🗑️</button>
-                            </td>
-                        </tr>
-                    `;
-                });
-
             } catch (err) {
                 console.error("Error loading data:", err);
             }
         }
 
-        // دالة حفظ توزيع المعلمين على الصفوف في السحابة
+        // حفظ تعديلات بيانات المعلمين المباشرة في جدول staff
+        async function saveStaffEditsInCloud() {
+            try {
+                const staffRows = document.querySelectorAll('#staffTable tbody tr');
+                for (let row of staffRows) {
+                    let id = row.getAttribute('data-staff-id');
+                    let name = row.querySelector('.edit-name').value.trim();
+                    let username = row.querySelector('.edit-username').value.trim();
+                    let cpr = row.querySelector('.edit-cpr').value.trim();
+                    let email = row.querySelector('.edit-email').value.trim();
+                    let role = row.querySelector('.edit-role').value;
+
+                    if (id && name) {
+                        await supabaseClient.from('staff').update({ name, username, cpr, email, role }).eq('id', id);
+                    }
+                }
+
+                alert('✅ تم حفظ تعديلات بيانات المعلمين في جدول staff بنجاح!');
+                loadAllData();
+
+            } catch (err) {
+                console.error("Save Staff Error:", err);
+                alert('حدث خطأ أثناء حفظ المعلمين: ' + err.message);
+            }
+        }
+
+        // حفظ توزيع المعلمين على الصفوف في الجدول المنفصل class_teachers بالسحابة
         async function saveClassAssignmentsInCloud() {
             try {
                 const classRows = document.querySelectorAll('#classTeachersTable tbody tr');
@@ -296,44 +320,18 @@
                     }
                 }
 
-                // تحديث حقل الصلاحية classes لكل معلم تلقائياً بناءً على تعيينات الصفوف
+                // تحديث حقل classes في جدول staff كمرجع إضافي متزامن
                 for (let teacherObj of allStaffList) {
                     let assignedClasses = teacherClassesMap[teacherObj.name] || [];
                     await supabaseClient.from('staff').update({ classes: assignedClasses.join(', ') }).eq('id', teacherObj.id || teacherObj.cpr);
                 }
 
-                alert('✅ تم حفظ وتحديث توزيع المعلمين على الصفوف وصلاحياتهم بنجاح!');
+                alert('✅ تم حفظ وتحديث جدول توزيع الصفوف (class_teachers) بنجاح في السحابة!');
                 loadAllData();
 
             } catch (err) {
                 console.error("Save Classes Error:", err);
                 alert('حدث خطأ أثناء حفظ التوزيع: ' + err.message);
-            }
-        }
-
-        // دالة حفظ تعديلات بيانات المعلمين المباشرة في السحابة
-        async function saveStaffEditsInCloud() {
-            try {
-                const staffRows = document.querySelectorAll('#staffTable tbody tr');
-                for (let row of staffRows) {
-                    let id = row.getAttribute('data-staff-id');
-                    let name = row.querySelector('.edit-name').value.trim();
-                    let username = row.querySelector('.edit-username').value.trim();
-                    let cpr = row.querySelector('.edit-cpr').value.trim();
-                    let email = row.querySelector('.edit-email').value.trim();
-                    let role = row.querySelector('.edit-role').value;
-
-                    if (id && name) {
-                        await supabaseClient.from('staff').update({ name, username, cpr, email, role }).eq('id', id);
-                    }
-                }
-
-                alert('✅ تم حفظ كافة تعديلات بيانات المعلمين بنجاح!');
-                loadAllData();
-
-            } catch (err) {
-                console.error("Save Staff Error:", err);
-                alert('حدث خطأ أثناء حفظ المعلمين: ' + err.message);
             }
         }
 
