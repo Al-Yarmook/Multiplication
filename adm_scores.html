@@ -109,6 +109,7 @@
 
     <script>
         let currentUser = JSON.parse(localStorage.getItem('current_staff_user'));
+        let teacherClassesFromCloud = [];
 
         if(!currentUser) { 
             window.location.href = 'staff.html'; 
@@ -117,25 +118,51 @@
             const roleName = (roleVal === 'admin' || roleVal === 'مدير') ? 'مدير النظام' : (roleVal === 'supervisor' || roleVal === 'مشرف') ? 'مشرف' : 'معلم';
             document.getElementById('welcomeTitle').textContent = `درجات الطلاب (${currentUser.name || 'مستخدم'} - ${roleName})`;
 
-            // إذا كان المستخدم معلماً، نخفي تبويبات الإدارة ونضبط إشعار الصفوف
+            // تكييف الواجهة حسب صلاحيات دور المستخدم
             if(roleVal === 'teacher' || roleVal === 'معلم') {
                 document.querySelectorAll('.role-admin-sup').forEach(el => el.classList.add('hidden'));
                 document.querySelectorAll('.admin-only-tab').forEach(el => el.classList.add('hidden'));
                 document.querySelectorAll('.admin-sup-col').forEach(el => el.classList.add('hidden'));
-                
-                if(currentUser.classes) {
-                    document.getElementById('filterNotice').textContent = `* تظهر لك درجات طلاب صفوفك فقط: (${currentUser.classes})`;
-                } else {
-                    document.getElementById('filterNotice').textContent = `* لم يتم تحديد صفوف لحسابك بعد. يرجى مراجعة الإدارة.`;
-                }
             } else {
                 document.getElementById('filterNotice').textContent = `* عرض درجات جميع طلاب المدرسة (صلاحية إدارية / إشرافية).`;
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            await fetchTeacherAssignedClasses();
             loadScores();
         });
+
+        // جلب صفوف المعلم المحددة في جدول class_teachers بالسحابة بناءً على اسم المستخدم
+        async function fetchTeacherAssignedClasses() {
+            const roleVal = String(currentUser.role || '').trim().toLowerCase();
+            const isTeacher = (roleVal === 'teacher' || roleVal === 'معلم');
+
+            if (isTeacher && currentUser.name) {
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('class_teachers')
+                        .select('cls')
+                        .eq('teacher_name', currentUser.name);
+
+                    if (data && data.length > 0) {
+                        teacherClassesFromCloud = data.map(item => String(item.cls).trim());
+                        document.getElementById('filterNotice').textContent = `* تظهر لك درجات طلاب صفوفك المسندة بالسحابة فقط: (${teacherClassesFromCloud.join(', ')})`;
+                    } else if (currentUser.classes) {
+                        // استخدام الصفوف المحلية كخطة بديلة إذا لم يُعثر على بيانات في class_teachers
+                        teacherClassesFromCloud = currentUser.classes.split(',').map(c => c.trim());
+                        document.getElementById('filterNotice').textContent = `* تظهر لك درجات طلاب صفوفك فقط: (${teacherClassesFromCloud.join(', ')})`;
+                    } else {
+                        document.getElementById('filterNotice').textContent = `* لم يتم العثور على صفوف مسندة لحسابك في السحابة. يرجى مراجعة الإدارة.`;
+                    }
+                } catch (err) {
+                    console.error("خطأ في جلب صفوف المعلم من السحابة:", err);
+                    if (currentUser.classes) {
+                        teacherClassesFromCloud = currentUser.classes.split(',').map(c => c.trim());
+                    }
+                }
+            }
+        }
 
         async function loadScores() {
             const selectedGame = document.getElementById('gameFilter').value;
@@ -164,17 +191,16 @@
 
             const roleVal = String(currentUser.role || '').trim().toLowerCase();
             const isTeacher = (roleVal === 'teacher' || roleVal === 'معلم');
-            let teacherClasses = isTeacher && currentUser.classes ? currentUser.classes.split(',').map(c => c.trim()) : [];
 
             if(data && data.length > 0) {
                 let rank = 1;
                 let displayedCount = 0;
 
                 data.forEach(sc => {
-                    // فلترة صفوف المعلم إذا كان الحساب معلماً
-                    if(isTeacher && teacherClasses.length > 0) {
-                        if(!sc.cls || !teacherClasses.includes(sc.cls.trim())) {
-                            return; // تخطي الطالب إذا لم يكن من صفوف المعلم
+                    // فلترة نتائج المعلم حسب الصفوف الجلبة من جدول class_teachers
+                    if(isTeacher) {
+                        if(!sc.cls || !teacherClassesFromCloud.includes(String(sc.cls).trim())) {
+                            return; // تخطي الطالب إن لم يكن ضمن الصفوف المسندة للمعلم
                         }
                     }
 
@@ -196,7 +222,7 @@
                 });
 
                 if(displayedCount === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#666;">لا توجد درجات مسجلة لصفوفك حالياً.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#666;">لا توجد درجات مسجلة لصفوفك المسندة حالياً.</td></tr>`;
                 }
             } else {
                 tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#666;">لا توجد درجات مسجلة لهذه اللعبة حتى الآن.</td></tr>`;
