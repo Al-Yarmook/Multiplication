@@ -40,8 +40,8 @@
         .btn { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; font-family: 'Cairo'; transition: 0.3s; text-decoration: none; display: inline-block; }
         .btn:hover { background: var(--primary-hover); }
         .btn-green { background: #2e7d32; }
+        .btn-green:hover { background: #1b5e20; }
         .btn-red { background: #d32f2f; }
-        .btn-blue { background: #1565c0; }
         .btn-purple { background: #7c3aed; }
         .btn-purple:hover { background: #6d28d9; }
         
@@ -116,13 +116,12 @@
         <div class="section-card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
                 <h2 style="margin:0;">🏫 توزيع المعلمين على فرق المدرسة</h2>
-                <button class="btn btn-green" onclick="saveAllClassAssignments()">💾 حفظ توزيع الصفوف</button>
             </div>
             <table id="classTeachersTable">
                 <thead>
                     <tr>
                         <th>الفرقة / الصف الدراسية</th>
-                        <th>عدد الطلاب</th>
+                        <th>عدد الطلاب المسجلين بالسحابة</th>
                         <th>المعلم المسند للفرقة</th>
                     </tr>
                 </thead>
@@ -132,13 +131,13 @@
             </table>
         </div>
 
-        <!-- جدول عرض وتعديل بيانات المعلمين مباشرة مع زر الحفظ بالاعلى -->
+        <!-- جدول عرض وتعديل بيانات المعلمين مباشرة مع زر حفظ موحد بالاعلى -->
         <div class="section-card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
                 <h2 style="margin:0;">📋 قائمة المعلمين والمشرفين (تعديل مباشر)</h2>
-                <button class="btn btn-green" onclick="saveAllStaffEdits()">💾 حفظ كافة تعديلات المعلمين</button>
+                <button class="btn btn-green" onclick="saveAllChangesInCloud()" style="font-size: 15px; padding: 10px 20px;">💾 حفظ كافة تعديلات المعلمين والصفوف</button>
             </div>
-            <p style="color: #64748b; font-size: 13px; margin-bottom: 10px;">قم بالتعديل على الحقول مباشرة في الجدول أدناه، ثم اضغط على زر الحفظ بالأعلى.</p>
+            <p style="color: #64748b; font-size: 13px; margin-bottom: 10px;">قم بإجراء التعديلات مباشرة في الجدولين، ثم اضغط زر "حفظ كافة تعديلات المعلمين والصفوف" بالأعلى لتحديث السحابة دفعة واحدة.</p>
             
             <table id="staffTable">
                 <thead>
@@ -186,11 +185,11 @@
 
         async function loadAllData() {
             try {
-                // 1. جلب المعلمين والمشرفين
+                // 1. جلب المعلمين والمشرفين من جدول staff
                 const staffRes = await supabaseClient.from('staff').select('*');
                 allStaffList = staffRes.data || [];
 
-                // 2. جلب الفرق من جدول الطلاب
+                // 2. جلب جميع الصفوف من جدول الطلاب لاستخراج جميع الفرق
                 const studentsRes = await supabaseClient.from('students').select('cls');
                 let sectionsMap = {};
                 if (studentsRes.data) {
@@ -204,7 +203,7 @@
                     sortedSections = ['3ب1', '3ب2', '4ب1', '4ب2', '5ب1', '5ب2', '6ب1', '6ب2'];
                 }
 
-                // 3. جلب التعيينات المخزنة في class_teachers
+                // 3. جلب التعيينات المخزنة في جدول class_teachers
                 const assignmentsRes = await supabaseClient.from('class_teachers').select('*');
                 let assignedMap = {};
                 if (assignmentsRes.data) {
@@ -213,7 +212,7 @@
                     });
                 }
 
-                // تعبئة جدول توزيع المعلمين على الصفوف
+                // تعبئة جدول توزيع المعلمين على الفرق
                 const classTbody = document.querySelector('#classTeachersTable tbody');
                 classTbody.innerHTML = '';
                 sortedSections.forEach(sec => {
@@ -239,7 +238,7 @@
                     `;
                 });
 
-                // تعبئة جدول تعديل بيانات المعلمين مباشرة
+                // تعبئة جدول التعديل المباشر للمعلمين
                 const staffTbody = document.querySelector('#staffTable tbody');
                 staffTbody.innerHTML = '';
                 if (allStaffList.length === 0) {
@@ -275,13 +274,29 @@
             }
         }
 
-        // حفظ توزيع المعلمين على الصفوف
-        async function saveAllClassAssignments() {
-            const rows = document.querySelectorAll('#classTeachersTable tbody tr');
-            let teacherClassesMap = {};
-
+        // دالة الحفظ الموحدة لجميع التعديلات (بيانات المعلمين والصفوف في السحابة)
+        async function saveAllChangesInCloud() {
             try {
-                for (let row of rows) {
+                // 1. حفظ تعديلات المعلمين المباشرة في جدول staff
+                const staffRows = document.querySelectorAll('#staffTable tbody tr');
+                for (let row of staffRows) {
+                    let id = row.getAttribute('data-staff-id');
+                    let name = row.querySelector('.edit-name').value.trim();
+                    let username = row.querySelector('.edit-username').value.trim();
+                    let cpr = row.querySelector('.edit-cpr').value.trim();
+                    let email = row.querySelector('.edit-email').value.trim();
+                    let role = row.querySelector('.edit-role').value;
+
+                    if (id && name) {
+                        await supabaseClient.from('staff').update({ name, username, cpr, email, role }).eq('id', id);
+                    }
+                }
+
+                // 2. حفظ توزيع المعلمين على الفرق في جدول class_teachers ومزامنة حقل classes
+                const classRows = document.querySelectorAll('#classTeachersTable tbody tr');
+                let teacherClassesMap = {};
+
+                for (let row of classRows) {
                     let cls = row.getAttribute('data-class');
                     let teacherName = row.querySelector('.teacher-select').value;
                     if (cls) {
@@ -293,37 +308,17 @@
                     }
                 }
 
+                // 3. تحديث حقل الصلاحية classes لكل معلم
                 for (let teacherObj of allStaffList) {
                     let assignedClasses = teacherClassesMap[teacherObj.name] || [];
                     await supabaseClient.from('staff').update({ classes: assignedClasses.join(', ') }).eq('id', teacherObj.id || teacherObj.cpr);
                 }
 
-                alert('✅ تم حفظ وتحديث توزيع الصفوف والصلاحيات بنجاح!');
+                alert('✅ تم حفظ كافة تعديلات المعلمين وتوزيع الصفوف بنجاح في السحابة!');
                 loadAllData();
-            } catch (err) {
-                alert('خطأ أثناء الحفظ: ' + err.message);
-            }
-        }
 
-        // حفظ كافة تعديلات المعلمين من الجدول مباشرة بالزر العلوي
-        async function saveAllStaffEdits() {
-            const rows = document.querySelectorAll('#staffTable tbody tr');
-            try {
-                for (let row of rows) {
-                    let id = row.getAttribute('data-staff-id');
-                    let name = row.querySelector('.edit-name').value.trim();
-                    let username = row.querySelector('.edit-username').value.trim();
-                    let cpr = row.querySelector('.edit-cpr').value.trim();
-                    let email = row.querySelector('.edit-email').value.trim();
-                    let role = row.querySelector('.edit-role').value;
-
-                    if (id) {
-                        await supabaseClient.from('staff').update({ name, username, cpr, email, role }).eq('id', id);
-                    }
-                }
-                alert('✅ تم حفظ جميع تعديلات بيانات المعلمين بنجاح!');
-                loadAllData();
             } catch (err) {
+                console.error("Save All Error:", err);
                 alert('حدث خطأ أثناء حفظ التعديلات: ' + err.message);
             }
         }
@@ -368,7 +363,6 @@
 
             const { error } = await supabaseClient.from('staff').update({ password: newPass }).eq('id', staffId);
             if (error) {
-                // محاولة التحديث عبر الـ cpr لو فشل الـ id
                 await supabaseClient.from('staff').update({ password: newPass }).eq('cpr', staffId);
             }
             alert(`✅ تم تحديث كلمة مرور المعلم (${staffName}) بنجاح!`);
