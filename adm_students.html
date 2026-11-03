@@ -55,12 +55,13 @@
             <button class="btn btn-red" onclick="logout()">تسجيل الخروج 🚪</button>
         </header>
 
-        <!-- شريط التبويبات الموحد لجميع الصفحات -->
+        <!-- شريط التبويبات الموحد لجميع الصفحات (تم إضافة تبويب التقارير الشاملة) -->
         <div class="nav-tabs" id="navTabs">
             <a href="adm_students.html" class="tab-btn active role-admin role-supervisor">👥 بيانات الطلاب</a>
             <a href="adm_teachers.html" class="tab-btn role-admin role-supervisor">👨‍🏫 إدارة المعلمين</a>
             <a href="adm_games.html" class="tab-btn role-admin role-supervisor">🎮 إعدادات الألعاب</a>
             <a href="adm_scores.html" class="tab-btn role-admin role-supervisor role-teacher">📊 درجات الطلاب</a>
+            <a href="adm_reports.html" class="tab-btn role-admin role-supervisor role-teacher">📈 التقارير الشاملة</a>
             <a href="adm_reset.html" class="tab-btn role-admin">⚙️ تصفير النتائج</a>
             <a href="adm_profile.html" class="tab-btn role-admin role-supervisor role-teacher">👤 بياناتي الشخصية</a>
         </div>
@@ -76,7 +77,7 @@
                 <button class="btn" onclick="exportStudentsExcel()">📊 تحميل جميع بيانات الطلاب إكسل</button>
             </div>
 
-            <!-- نموذج الإضافة اليدوية (تظهر للمدير والشرِف) -->
+            <!-- نموذج الإضافة اليدوية (تظهر للمدير والمشرف) -->
             <h3>إضافة طالب يدويّاً</h3>
             <div class="form-row">
                 <div class="form-group"><label>اسم الطالب:</label><input type="text" id="stdName" placeholder="الاسم الكامل"></div>
