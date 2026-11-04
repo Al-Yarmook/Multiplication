@@ -48,20 +48,24 @@
 
         .report-preview-area { background: white; padding: 10px; border-radius: 12px; margin-top: 5px; }
         
-        /* ضبط احتواء الصفحة الواحدة تماماً كما كان سابقاً */
+        /* ضبط احتواء الصفحة الواحدة بدقة ومنع الصفحات الفارغة الزائدة */
         .report-single-page { 
             page-break-after: always; 
             break-after: page; 
-            page-break-inside: avoid;
-            break-inside: avoid;
             display: flex; 
             flex-direction: column; 
             justify-content: space-between; 
-            height: 98vh;
-            max-height: 98vh;
+            min-height: 94vh;
+            max-height: 96vh;
             padding: 2px 5px;
             box-sizing: border-box;
             overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .report-single-page:last-child {
+            page-break-after: avoid;
+            break-after: avoid;
         }
 
         .report-header { text-align: center; margin-bottom: 2px; }
@@ -69,29 +73,32 @@
         .report-title { font-size: 13px; font-weight: bold; color: #1e293b; }
         .teacher-info { font-size: 10px; font-weight: bold; color: var(--primary); margin-top: 1px; }
 
-        /* تصغير حجم خط الجدول والهوامش لضمان احتواء كافة الأسماء في صفحة واحدة */
         .report-table { width: 100%; border-collapse: collapse; margin-bottom: 2px; font-size: 9.5px; }
         .report-table th, .report-table td { border: 1px solid #cbd5e1; padding: 1px 3px; text-align: center; line-height: 1.1; }
         .report-table th { background: #f1f5f9; color: #1e293b; font-weight: bold; font-size: 10px; }
 
-        /* تذييل الصفحة المكون من 5 أعمدة */
         .footer-table { width: 100%; border-collapse: collapse; margin-top: auto; border: none !important; }
         .footer-table td { border: none !important; padding: 1px; text-align: center; vertical-align: top; width: 20%; }
-        .footer-editable-cell { width: 100%; min-height: 30px; background: transparent; border: none; text-align: center; font-family: 'Cairo'; resize: none; outline: none; line-height: 1.1; }
+        .footer-editable-cell { width: 100%; min-height: 28px; background: transparent; border: none; text-align: center; font-family: 'Cairo'; resize: none; outline: none; line-height: 1.1; }
 
         .hidden { display: none !important; }
 
         @media print {
-            @page { size: auto; margin: 3mm; }
+            @page { size: auto; margin: 5mm; }
             body { background: white; padding: 0; margin: 0; }
             header, .card:not(#reportOutputCard), .btn-row, .nav-tabs, footer.author-footer, #reportHeaderTitleCard { display: none !important; }
             .report-preview-area { box-shadow: none; padding: 0; margin: 0; }
             .report-single-page { 
                 page-break-after: always; 
                 break-after: page; 
-                height: 99vh !important; 
-                max-height: 99vh !important;
+                height: 96vh !important; 
+                max-height: 96vh !important;
                 padding: 0;
+                margin: 0;
+            }
+            .report-single-page:last-child {
+                page-break-after: avoid;
+                break-after: avoid;
             }
         }
     </style>
@@ -115,15 +122,15 @@
         </div>
 
         <div class="card hidden" id="adminSettingsCard">
-            <h2>⚙️ إعدادات التقارير الافتراضية والتذييل (خاص بمدير النظام)</h2>
+            <h2>⚙️ إعدادات التقارير الافتراضية والتذييل (السحابية العامة)</h2>
             <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center; margin-bottom: 10px;">
                 <div class="form-group" style="flex: 1; min-width: 200px;">
-                    <label>رفع شعار رأس التقرير:</label>
+                    <label>رفع شعار رأس التقرير (يُحفظ بالسحابة):</label>
                     <input type="file" id="logoUploadInput" accept="image/*" onchange="handleLogoUpload(event)">
                 </div>
                 <div class="form-group" style="flex: 1; min-width: 180px;">
                     <label>حجم خط خلايا التذييل:</label>
-                    <select id="footerFontSize" onchange="saveAdminSettings()" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: 'Cairo'; font-size: 12px;">
+                    <select id="footerFontSize" onchange="saveCloudSettings()" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: 'Cairo'; font-size: 12px;">
                         <option value="9px" selected>صغير جداً (9 بكسل)</option>
                         <option value="10px">صغير (10 بكسل)</option>
                         <option value="11px">متوسط (11 بكسل)</option>
@@ -132,13 +139,13 @@
                 </div>
             </div>
 
-            <label style="font-size: 11px; font-weight: bold; color: #475569; display: block; margin-bottom: 4px;">محتوى خانات التذييل الـ 5 الافتراضية:</label>
+            <label style="font-size: 11px; font-weight: bold; color: #475569; display: block; margin-bottom: 4px;">محتوى خانات التذييل الـ 5 الافتراضية (تُحفظ بالسحابة لجميع المستخدمين):</label>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px;">
-                <input type="text" id="foot1" placeholder="الخانة 1" oninput="saveAdminSettings()">
-                <input type="text" id="foot2" placeholder="الخانة 2" oninput="saveAdminSettings()">
-                <input type="text" id="foot3" placeholder="الخانة 3" oninput="saveAdminSettings()">
-                <input type="text" id="foot4" placeholder="الخانة 4" oninput="saveAdminSettings()">
-                <input type="text" id="foot5" placeholder="الخانة 5" oninput="saveAdminSettings()">
+                <input type="text" id="foot1" placeholder="الخانة 1" oninput="saveCloudSettings()">
+                <input type="text" id="foot2" placeholder="الخانة 2" oninput="saveCloudSettings()">
+                <input type="text" id="foot3" placeholder="الخانة 3" oninput="saveCloudSettings()">
+                <input type="text" id="foot4" placeholder="الخانة 4" oninput="saveCloudSettings()">
+                <input type="text" id="foot5" placeholder="الخانة 5" oninput="saveCloudSettings()">
             </div>
         </div>
 
@@ -220,11 +227,20 @@
         let cloudSections = [];
         let classTeachersAssignments = [];
         let teacherAssignedClassesList = [];
+        let cloudSettings = {
+            logo: '',
+            foot1: 'معلم المادة',
+            foot2: 'المشرف التربوي',
+            foot3: 'مدير المدرسة',
+            foot4: 'ختم المدرسة',
+            foot5: 'ملاحظات',
+            fSize: '9px'
+        };
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             checkUserPermissions();
             initHeaderTitle();
-            loadAdminSettingsToUI();
+            await fetchCloudSettings();
             fetchCloudData();
         });
 
@@ -248,24 +264,75 @@
             document.getElementById('welcomeTitle').textContent = `تقارير الأداء الشاملة (${currentUser.name || 'مستخدم'} - ${roleName})`;
         }
 
-        function loadAdminSettingsToUI() {
-            document.getElementById('foot1').value = localStorage.getItem('rep_foot_1') || 'معلم المادة';
-            document.getElementById('foot2').value = localStorage.getItem('rep_foot_2') || 'المشرف التربوي';
-            document.getElementById('foot3').value = localStorage.getItem('rep_foot_3') || 'مدير المدرسة';
-            document.getElementById('foot4').value = localStorage.getItem('rep_foot_4') || 'ختم المدرسة';
-            document.getElementById('foot5').value = localStorage.getItem('rep_foot_5') || 'ملاحظات';
-            
-            const savedSize = localStorage.getItem('rep_foot_size');
-            if(savedSize) document.getElementById('footerFontSize').value = savedSize;
+        // جلب الإعدادات والشعار من السحابة (جدول settings)
+        async function fetchCloudSettings() {
+            try {
+                const { data, error } = await supabaseClient.from('settings').select('*').limit(1);
+                if (data && data.length > 0) {
+                    const s = data[0];
+                    cloudSettings.logo = s.logo || '';
+                    cloudSettings.foot1 = s.foot1 || 'معلم المادة';
+                    cloudSettings.foot2 = s.foot2 || 'المشرف التربوي';
+                    cloudSettings.foot3 = s.foot3 || 'مدير المدرسة';
+                    cloudSettings.foot4 = s.foot4 || 'ختم المدرسة';
+                    cloudSettings.foot5 = s.foot5 || 'ملاحظات';
+                    cloudSettings.fSize = s.footer_size || '9px';
+                }
+            } catch (err) {
+                console.log("جدول الإعدادات غير موجود أو حدث خطأ، سيتم استخدام القيم الافتراضية.");
+            }
+
+            // تعبئة واجهة المدير بالقيم السحابية
+            document.getElementById('foot1').value = cloudSettings.foot1;
+            document.getElementById('foot2').value = cloudSettings.foot2;
+            document.getElementById('foot3').value = cloudSettings.foot3;
+            document.getElementById('foot4').value = cloudSettings.foot4;
+            document.getElementById('foot5').value = cloudSettings.foot5;
+            document.getElementById('footerFontSize').value = cloudSettings.fSize;
         }
 
-        function saveAdminSettings() {
-            localStorage.setItem('rep_foot_1', document.getElementById('foot1').value);
-            localStorage.setItem('rep_foot_2', document.getElementById('foot2').value);
-            localStorage.setItem('rep_foot_3', document.getElementById('foot3').value);
-            localStorage.setItem('rep_foot_4', document.getElementById('foot4').value);
-            localStorage.setItem('rep_foot_5', document.getElementById('foot5').value);
-            localStorage.setItem('rep_foot_size', document.getElementById('footerFontSize').value);
+        // حفظ وتحديث الإعدادات في السحابة فوراً
+        async function saveCloudSettings() {
+            cloudSettings.foot1 = document.getElementById('foot1').value;
+            cloudSettings.foot2 = document.getElementById('foot2').value;
+            cloudSettings.foot3 = document.getElementById('foot3').value;
+            cloudSettings.foot4 = document.getElementById('foot4').value;
+            cloudSettings.foot5 = document.getElementById('foot5').value;
+            cloudSettings.fSize = document.getElementById('footerFontSize').value;
+
+            try {
+                const { data } = await supabaseClient.from('settings').select('id').limit(1);
+                const payload = {
+                    logo: cloudSettings.logo,
+                    foot1: cloudSettings.foot1,
+                    foot2: cloudSettings.foot2,
+                    foot3: cloudSettings.foot3,
+                    foot4: cloudSettings.foot4,
+                    foot5: cloudSettings.foot5,
+                    footer_size: cloudSettings.fSize
+                };
+
+                if (data && data.length > 0) {
+                    await supabaseClient.from('settings').update(payload).eq('id', data[0].id);
+                } else {
+                    await supabaseClient.from('settings').insert([payload]);
+                }
+            } catch (err) {
+                console.error("خطأ في حفظ الإعدادات بالسحابة:", err);
+            }
+        }
+
+        async function handleLogoUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    cloudSettings.logo = e.target.result;
+                    await saveCloudSettings();
+                    alert('✅ تم تحديث وحفظ شعار التقرير في السحابة بنجاح لكافة المستخدمين!');
+                };
+                reader.readAsDataURL(file);
+            }
         }
 
         async function fetchCloudData() {
@@ -344,21 +411,6 @@
             });
         }
 
-        let savedLogoBase64 = localStorage.getItem('report_custom_logo') || '';
-
-        function handleLogoUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    savedLogoBase64 = e.target.result;
-                    localStorage.setItem('report_custom_logo', savedLogoBase64);
-                    alert('✅ تم تحديث شعار التقرير بنجاح!');
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
         function getTeacherNameForSection(sec) {
             let foundInCT = classTeachersAssignments.find(item => item.cls === sec);
             if (foundInCT && foundInCT.teacher_name) {
@@ -427,13 +479,6 @@
 
                 let sortedForRank = [...allStudents].sort((a, b) => b.total - a.total);
 
-                let f1 = localStorage.getItem('rep_foot_1') || 'معلم المادة';
-                let f2 = localStorage.getItem('rep_foot_2') || 'المشرف التربوي';
-                let f3 = localStorage.getItem('rep_foot_3') || 'مدير المدرسة';
-                let f4 = localStorage.getItem('rep_foot_4') || 'ختم المدرسة';
-                let f5 = localStorage.getItem('rep_foot_5') || 'ملاحظات';
-                let fSize = localStorage.getItem('rep_foot_size') || '9px';
-
                 let htmlContent = '';
 
                 selectedOptions.forEach((sec) => {
@@ -449,7 +494,7 @@
                     htmlContent += `
                         <div>
                             <div class="report-header">
-                                ${savedLogoBase64 ? `<img src="${savedLogoBase64}" class="report-logo">` : ''}
+                                ${cloudSettings.logo ? `<img src="${cloudSettings.logo}" class="report-logo">` : ''}
                                 <div class="report-title">تقرير أداء الطلاب - الشعبة (${sec})</div>
                                 <div class="teacher-info">معلم الصف: ${teacherName}</div>
                             </div>
@@ -506,11 +551,11 @@
                     htmlContent += `
                         <table class="footer-table">
                             <tr>
-                                <td><textarea class="footer-editable-cell" style="font-size: ${fSize};">${f1}</textarea></td>
-                                <td><textarea class="footer-editable-cell" style="font-size: ${fSize};">${f2}</textarea></td>
-                                <td><textarea class="footer-editable-cell" style="font-size: ${fSize};">${f3}</textarea></td>
-                                <td><textarea class="footer-editable-cell" style="font-size: ${fSize};">${f4}</textarea></td>
-                                <td><textarea class="footer-editable-cell" style="font-size: ${fSize};">${f5}</textarea></td>
+                                <td><textarea class="footer-editable-cell" style="font-size: ${cloudSettings.fSize};">${cloudSettings.foot1}</textarea></td>
+                                <td><textarea class="footer-editable-cell" style="font-size: ${cloudSettings.fSize};">${cloudSettings.foot2}</textarea></td>
+                                <td><textarea class="footer-editable-cell" style="font-size: ${cloudSettings.fSize};">${cloudSettings.foot3}</textarea></td>
+                                <td><textarea class="footer-editable-cell" style="font-size: ${cloudSettings.fSize};">${cloudSettings.foot4}</textarea></td>
+                                <td><textarea class="footer-editable-cell" style="font-size: ${cloudSettings.fSize};">${cloudSettings.foot5}</textarea></td>
                             </tr>
                         </table>
                     `;
