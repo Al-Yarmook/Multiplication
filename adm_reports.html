@@ -48,7 +48,6 @@
 
         .report-preview-area { background: white; padding: 10px; border-radius: 12px; margin-top: 5px; }
         
-        /* ضبط احتواء الصفحة الواحدة بدقة ومنع الصفحات الفارغة الزائدة */
         .report-single-page { 
             page-break-after: always; 
             break-after: page; 
@@ -122,10 +121,10 @@
         </div>
 
         <div class="card hidden" id="adminSettingsCard">
-            <h2>⚙️ إعدادات التقارير الافتراضية والتذييل (السحابية العامة)</h2>
+            <h2>⚙️ إعدادات التقارير الافتراضية والتذييل (المزامنة السحابية الدائمة)</h2>
             <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center; margin-bottom: 10px;">
                 <div class="form-group" style="flex: 1; min-width: 200px;">
-                    <label>رفع شعار رأس التقرير (يُحفظ بالسحابة):</label>
+                    <label>رفع شعار رأس التقرير:</label>
                     <input type="file" id="logoUploadInput" accept="image/*" onchange="handleLogoUpload(event)">
                 </div>
                 <div class="form-group" style="flex: 1; min-width: 180px;">
@@ -139,7 +138,7 @@
                 </div>
             </div>
 
-            <label style="font-size: 11px; font-weight: bold; color: #475569; display: block; margin-bottom: 4px;">محتوى خانات التذييل الـ 5 الافتراضية (تُحفظ بالسحابة لجميع المستخدمين):</label>
+            <label style="font-size: 11px; font-weight: bold; color: #475569; display: block; margin-bottom: 4px;">محتوى خانات التذييل الـ 5 الافتراضية:</label>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px;">
                 <input type="text" id="foot1" placeholder="الخانة 1" oninput="saveCloudSettings()">
                 <input type="text" id="foot2" placeholder="الخانة 2" oninput="saveCloudSettings()">
@@ -229,11 +228,11 @@
         let teacherAssignedClassesList = [];
         let cloudSettings = {
             logo: '',
-            foot1: 'اعداد: أ. صادق القلعاوي',
-            foot2: 'منسق القسم: أ. حسين الصيرفي',
-            foot3: المدير المساعد أ. علي ابراهيم ',
-            foot4: 'المدير المساعد: أ. طارق بدوي',
-            foot5: 'مدير المدرسة: أ. عدنان الخيراني',
+            foot1: 'معلم المادة',
+            foot2: 'المشرف التربوي',
+            foot3: 'مدير المدرسة',
+            foot4: 'ختم المدرسة',
+            foot5: 'ملاحظات',
             fSize: '9px'
         };
 
@@ -264,10 +263,16 @@
             document.getElementById('welcomeTitle').textContent = `تقارير الأداء الشاملة (${currentUser.name || 'مستخدم'} - ${roleName})`;
         }
 
-        // جلب الإعدادات والشعار من السحابة (جدول settings)
+        // جلب الإعدادات الموحدة من جدول staff أو جدول settings المرتبط بحساب المدير
         async function fetchCloudSettings() {
             try {
-                const { data, error } = await supabaseClient.from('settings').select('*').limit(1);
+                // نبحث في جدول staff عن حساب المدير الرئيسي المسؤول أو الحساب الحالي لتخزين الإعدادات الموحدة
+                const { data, error } = await supabaseClient
+                    .from('settings')
+                    .select('*')
+                    .eq('key', 'global_report_settings')
+                    .limit(1);
+
                 if (data && data.length > 0) {
                     const s = data[0];
                     cloudSettings.logo = s.logo || '';
@@ -279,10 +284,9 @@
                     cloudSettings.fSize = s.footer_size || '9px';
                 }
             } catch (err) {
-                console.log("جدول الإعدادات غير موجود أو حدث خطأ، سيتم استخدام القيم الافتراضية.");
+                console.log("جارٍ إنشاء أو جلب الإعدادات السحابية...");
             }
 
-            // تعبئة واجهة المدير بالقيم السحابية
             document.getElementById('foot1').value = cloudSettings.foot1;
             document.getElementById('foot2').value = cloudSettings.foot2;
             document.getElementById('foot3').value = cloudSettings.foot3;
@@ -291,7 +295,7 @@
             document.getElementById('footerFontSize').value = cloudSettings.fSize;
         }
 
-        // حفظ وتحديث الإعدادات في السحابة فوراً
+        // حفظ وحفظ الإعدادات في جدول settings بالسحابة لتظهر لدى جميع المستخدمين بغض النظر عن المتصفح
         async function saveCloudSettings() {
             cloudSettings.foot1 = document.getElementById('foot1').value;
             cloudSettings.foot2 = document.getElementById('foot2').value;
@@ -301,8 +305,8 @@
             cloudSettings.fSize = document.getElementById('footerFontSize').value;
 
             try {
-                const { data } = await supabaseClient.from('settings').select('id').limit(1);
                 const payload = {
+                    key: 'global_report_settings',
                     logo: cloudSettings.logo,
                     foot1: cloudSettings.foot1,
                     foot2: cloudSettings.foot2,
@@ -312,13 +316,19 @@
                     footer_size: cloudSettings.fSize
                 };
 
+                const { data } = await supabaseClient
+                    .from('settings')
+                    .select('id')
+                    .eq('key', 'global_report_settings')
+                    .limit(1);
+
                 if (data && data.length > 0) {
-                    await supabaseClient.from('settings').update(payload).eq('id', data[0].id);
+                    await supabaseClient.from('settings').update(payload).eq('key', 'global_report_settings');
                 } else {
                     await supabaseClient.from('settings').insert([payload]);
                 }
             } catch (err) {
-                console.error("خطأ في حفظ الإعدادات بالسحابة:", err);
+                console.error("خطأ في حفظ الإعدادات سحابياً:", err);
             }
         }
 
@@ -329,7 +339,7 @@
                 reader.onload = async function(e) {
                     cloudSettings.logo = e.target.result;
                     await saveCloudSettings();
-                    alert('✅ تم تحديث وحفظ شعار التقرير في السحابة بنجاح لكافة المستخدمين!');
+                    alert('✅ تم حفظ وتثبيت الشعار في السحابة بنجاح لكافة الأجهزة والمتصفحات!');
                 };
                 reader.readAsDataURL(file);
             }
