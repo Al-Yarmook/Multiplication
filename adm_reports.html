@@ -10,7 +10,605 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
+            --primary: #d81b60<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة فرسان جدول الضرب - تقارير الأداء الشاملة</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="config.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
             --primary: #d81b60;
+            --primary-hover: #ad1457;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+        body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 15px; }
+
+        .container { max-width: 1200px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
+
+        header { background: white; padding: 15px 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; border-top: 4px solid var(--primary); }
+        header h1 { color: var(--primary); font-size: 20px; font-weight: 900; margin: 0; }
+
+        .nav-tabs { display: flex; gap: 10px; margin-bottom: 5px; flex-wrap: wrap; }
+        .tab-btn { background: white; border: 2px solid var(--primary); color: var(--primary); padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; font-family: 'Cairo'; text-decoration: none; display: inline-block; font-size: 13px; }
+        .tab-btn.active, .tab-btn:hover { background: var(--primary); color: white; }
+
+        .card { background: white; border-radius: 12px; padding: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .card h2 { color: var(--primary); font-size: 16px; margin-bottom: 12px; font-weight: 800; border-bottom: 2px solid #f1f5f9; padding-bottom: 6px; }
+
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 10px; }
+        .form-group { display: flex; flex-direction: column; gap: 4px; }
+        .form-group label { font-size: 12px; font-weight: bold; color: #475569; }
+        .form-group input, .form-group select { padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; font-family: 'Cairo'; }
+
+        .checkbox-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; background: #f8fafc; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .checkbox-label { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: bold; cursor: pointer; }
+
+        .btn { background: var(--primary); color: white; border: none; padding: 8px 16px; font-size: 13px; font-weight: bold; border-radius: 6px; cursor: pointer; font-family: 'Cairo'; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 5px; text-decoration: none; }
+        .btn:hover { background: var(--primary-hover); }
+        .btn-green { background: #2e7d32; }
+        .btn-dark { background: #334155; }
+        .btn-red { background: #d32f2f; }
+        .btn-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+
+        .report-preview-area { background: white; padding: 10px; border-radius: 12px; margin-top: 5px; }
+        
+        .report-single-page { 
+            page-break-after: always; 
+            break-after: page; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+            min-height: 94vh;
+            max-height: 96vh;
+            padding: 2px 5px;
+            box-sizing: border-box;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .report-single-page:last-child {
+            page-break-after: avoid;
+            break-after: avoid;
+        }
+
+        .report-header { text-align: center; margin-bottom: 2px; }
+        .report-logo { max-height: 38px; display: block; margin: 0 auto 2px auto; object-fit: contain; }
+        .report-title { font-size: 13px; font-weight: bold; color: #1e293b; }
+        .teacher-info { font-size: 10px; font-weight: bold; color: var(--primary); margin-top: 1px; }
+
+        .report-table { width: 100%; border-collapse: collapse; margin-bottom: 2px; font-size: 9.5px; }
+        .report-table th, .report-table td { border: 1px solid #cbd5e1; padding: 1px 3px; text-align: center; line-height: 1.1; }
+        .report-table th { background: #f1f5f9; color: #1e293b; font-weight: bold; font-size: 10px; }
+
+        .footer-table { width: 100%; border-collapse: collapse; margin-top: auto; border: none !important; }
+        .footer-table td { border: none !important; padding: 1px; text-align: center; vertical-align: top; width: 20%; }
+        .footer-editable-cell { width: 100%; min-height: 28px; background: transparent; border: none; text-align: center; font-family: 'Cairo'; resize: none; outline: none; line-height: 1.1; }
+
+        .hidden { display: none !important; }
+
+        @media print {
+            @page { size: auto; margin: 5mm; }
+            body { background: white; padding: 0; margin: 0; }
+            header, .card:not(#reportOutputCard), .btn-row, .nav-tabs, footer.author-footer, #reportHeaderTitleCard { display: none !important; }
+            .report-preview-area { box-shadow: none; padding: 0; margin: 0; }
+            .report-single-page { 
+                page-break-after: always; 
+                break-after: page; 
+                height: 96vh !important; 
+                max-height: 96vh !important;
+                padding: 0;
+                margin: 0;
+            }
+            .report-single-page:last-child {
+                page-break-after: avoid;
+                break-after: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1 id="welcomeTitle">📈 تقارير الأداء الشاملة</h1>
+            <button class="btn btn-red" onclick="logout()">تسجيل الخروج 🚪</button>
+        </header>
+
+        <div class="nav-tabs" id="navTabs">
+            <a href="adm_students.html" class="tab-btn role-admin-sup">👥 بيانات الطلاب</a>
+            <a href="adm_teachers.html" class="tab-btn role-admin-sup">👨‍🏫 إدارة المعلمين</a>
+            <a href="adm_games.html" class="tab-btn role-admin-sup">🎮 إعدادات الألعاب</a>
+            <a href="adm_scores.html" class="tab-btn">📊 درجات الطلاب</a>
+            <a href="adm_reports.html" class="tab-btn active">📈 التقارير الشاملة</a>
+            <a href="adm_reset.html" class="tab-btn admin-only-tab">⚙️ تصفير النتائج</a>
+            <a href="adm_profile.html" class="tab-btn">👤 بياناتي الشخصية</a>
+        </div>
+
+        <div class="card hidden" id="adminSettingsCard">
+            <h2>⚙️ إعدادات التقارير الافتراضية والتذييل (المزامنة السحابية الفورية)</h2>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center; margin-bottom: 10px;">
+                <div class="form-group" style="flex: 1; min-width: 200px;">
+                    <label>رفع شعار رأس التقرير:</label>
+                    <input type="file" id="logoUploadInput" accept="image/*" onchange="handleLogoUpload(event)">
+                </div>
+                <div class="form-group" style="flex: 1; min-width: 180px;">
+                    <label>حجم خط خلايا التذييل:</label>
+                    <select id="footerFontSize" onchange="saveCloudSettings()" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: 'Cairo'; font-size: 12px;">
+                        <option value="9px" selected>صغير جداً (9 بكسل)</option>
+                        <option value="10px">صغير (10 بكسل)</option>
+                        <option value="11px">متوسط (11 بكسل)</option>
+                        <option value="12px">كبير (12 بكسل)</option>
+                    </select>
+                </div>
+            </div>
+
+            <label style="font-size: 11px; font-weight: bold; color: #475569; display: block; margin-bottom: 4px;">محتوى خانات التذييل الـ 5 الافتراضية:</label>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px;">
+                <input type="text" id="foot1" placeholder="الخانة 1" oninput="saveCloudSettings()">
+                <input type="text" id="foot2" placeholder="الخانة 2" oninput="saveCloudSettings()">
+                <input type="text" id="foot3" placeholder="الخانة 3" oninput="saveCloudSettings()">
+                <input type="text" id="foot4" placeholder="الخانة 4" oninput="saveCloudSettings()">
+                <input type="text" id="foot5" placeholder="الخانة 5" oninput="saveCloudSettings()">
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔍 فلاتر إعداد وتوليد التقرير</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>المرحلة الدراسية:</label>
+                    <select id="filterGrade" onchange="updateSectionsFilter()">
+                        <option value="all">جميع المراحل</option>
+                        <option value="3">الصف الثالث</option>
+                        <option value="4">الصف الرابع</option>
+                        <option value="5">الصف الخامس</option>
+                        <option value="6">الصف السادس</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>الفرقة / الشعبة:</label>
+                    <select id="filterSections" multiple style="height: 70px;"></select>
+                </div>
+                <div class="form-group">
+                    <label>نطاق الطلاب:</label>
+                    <select id="reportScope">
+                        <option value="all">جميع الطلاب (المسجلين بالسجل كاملاً)</option>
+                        <option value="active">الطلاب المتفاعلين فقط</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>اتجاه الصفحة:</label>
+                    <select id="pageOrientation">
+                        <option value="portrait" selected>عمودي (Portrait)</option>
+                        <option value="landscape">أفقي (Landscape)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="margin-top: 8px;">
+                <label style="font-size: 11px; font-weight: bold; color: #475569; display: block; margin-bottom: 3px;">أعمدة التقرير المطلوبة:</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label"><input type="checkbox" class="col-check" value="name" checked> اسم الطالب</label>
+                    <label class="checkbox-label"><input type="checkbox" class="col-check" value="cls" checked> الفرقة</label>
+                    <label class="checkbox-label"><input type="checkbox" class="col-check" value="total" checked> المجموع</label>
+                    <label class="checkbox-label"><input type="checkbox" class="col-check" value="rocket" checked> صواريخ الفضاء</label>
+                    <label class="checkbox-label"><input type="checkbox" class="col-check" value="goldmine" checked> منجم الذهب</label>
+                    <label class="checkbox-label"><input type="checkbox" class="col-check" value="mountain" checked> الصعود للقمة</label>
+                    <label class="checkbox-label"><input type="checkbox" class="col-check" value="snake" checked> الحية والسلم</label>
+                    <label class="checkbox-label"><input type="checkbox" class="col-check" value="rank_school" checked> تصنيف المدرسة</label>
+                    <label class="checkbox-label"><input type="checkbox" class="col-check" value="rank_section" checked> تصنيف الفرقة</label>
+                    <label class="checkbox-label"><input type="checkbox" class="col-check" value="rank_grade" checked> تصنيف المرحلة</label>
+                </div>
+            </div>
+
+            <div class="btn-row">
+                <button class="btn" onclick="generateReport()">⚡ توليد وعرض التقرير</button>
+            </div>
+        </div>
+
+        <div class="card hidden" id="reportOutputCard">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;" id="reportHeaderTitleCard">
+                <h2 style="border:none; margin:0; padding:0;">خيارات التصدير 📄</h2>
+                <div class="btn-row" style="margin:0;">
+                    <button class="btn btn-green" onclick="exportToExcel()">📊 تصدير إلى Excel</button>
+                    <button class="btn btn-dark" onclick="window.print()">🖨️ طباعة / حفظ PDF</button>
+                </div>
+            </div>
+
+            <div class="report-preview-area" id="reportPreviewContent"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        try { currentUser = JSON.parse(localStorage.getItem('current_staff_user')); } catch (e) {}
+
+        if (!currentUser) {
+            window.location.href = 'staff.html';
+        }
+
+        let cloudSections = [];
+        let classTeachersAssignments = [];
+        let teacherAssignedClassesList = [];
+        let cloudSettings = {
+            logo: '',
+            foot1: 'إعداد: أ. صادق القلعاوي',
+            foot2: 'منسق القسم: أ. حسين الصيرفي',
+            foot3: 'المدير المساعد: أ. طارق بدوي',
+            foot4: 'المدير المساعد: أ. علي ابراهيم',
+            foot5: 'مدير المدرسة: أ. عدنان الخيراني',
+            fSize: '9px'
+        };
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            checkUserPermissions();
+            initHeaderTitle();
+            await fetchCloudSettings();
+            fetchCloudData();
+        });
+
+        function checkUserPermissions() {
+            const roleVal = currentUser ? String(currentUser.role || '').trim().toLowerCase() : 'teacher';
+            const isTeacher = (roleVal === 'teacher' || roleVal === 'معلم');
+
+            if (roleVal === 'admin' || roleVal === 'مدير' || roleVal === 'administrator') {
+                document.getElementById('adminSettingsCard').classList.remove('hidden');
+            }
+
+            if (isTeacher) {
+                document.querySelectorAll('.role-admin-sup').forEach(el => el.classList.add('hidden'));
+                document.querySelectorAll('.admin-only-tab').forEach(el => el.classList.add('hidden'));
+            }
+        }
+
+        function initHeaderTitle() {
+            const roleVal = currentUser ? String(currentUser.role || '').trim().toLowerCase() : 'teacher';
+            const roleName = (roleVal === 'admin' || roleVal === 'مدير') ? 'مدير النظام' : (roleVal === 'supervisor' || roleVal === 'مشرف') ? 'معلم' : 'معلم';
+            document.getElementById('welcomeTitle').textContent = `تقارير الأداء الشاملة (${currentUser.name || 'مستخدم'} - ${roleName})`;
+        }
+
+        // جلب الإعدادات من جدول settings
+        async function fetchCloudSettings() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('settings')
+                    .select('*')
+                    .eq('key', 'global_report_settings')
+                    .limit(1);
+
+                if (data && data.length > 0) {
+                    const s = data[0];
+                    cloudSettings.logo = s.logo || '';
+                    cloudSettings.foot1 = s.foot1 || 'إعداد: أ. صادق القلعاوي';
+                    cloudSettings.foot2 = s.foot2 || 'منسق القسم: أ. حسين الصيرفي';
+                    cloudSettings.foot3 = s.foot3 || 'المدير المساعد: أ. طارق بدوي';
+                    cloudSettings.foot4 = s.foot4 || 'المدير المساعد: أ. علي ابراهيم';
+                    cloudSettings.foot5 = s.foot5 || 'مدير المدرسة: أ. عدنان الخيراني';
+                    cloudSettings.fSize = s.footer_size || '9px';
+                }
+            } catch (err) {
+                console.log("جاري جلب الإعدادات...");
+            }
+
+            document.getElementById('foot1').value = cloudSettings.foot1;
+            document.getElementById('foot2').value = cloudSettings.foot2;
+            document.getElementById('foot3').value = cloudSettings.foot3;
+            document.getElementById('foot4').value = cloudSettings.foot4;
+            document.getElementById('foot5').value = cloudSettings.foot5;
+            document.getElementById('footerFontSize').value = cloudSettings.fSize;
+        }
+
+        // حفظ أو إنشاء الإعدادات تلقائياً في السحابة باستخدام upsert
+        async function saveCloudSettings() {
+            cloudSettings.foot1 = document.getElementById('foot1').value;
+            cloudSettings.foot2 = document.getElementById('foot2').value;
+            cloudSettings.foot3 = document.getElementById('foot3').value;
+            cloudSettings.foot4 = document.getElementById('foot4').value;
+            cloudSettings.foot5 = document.getElementById('foot5').value;
+            cloudSettings.fSize = document.getElementById('footerFontSize').value;
+
+            try {
+                const payload = {
+                    key: 'global_report_settings',
+                    logo: cloudSettings.logo,
+                    foot1: cloudSettings.foot1,
+                    foot2: cloudSettings.foot2,
+                    foot3: cloudSettings.foot3,
+                    foot4: cloudSettings.foot4,
+                    foot5: cloudSettings.foot5,
+                    footer_size: cloudSettings.fSize
+                };
+
+                await supabaseClient.from('settings').upsert([payload], { onConflict: 'key' });
+            } catch (err) {
+                console.error("خطأ في حفظ الإعدادات سحابياً:", err);
+            }
+        }
+
+        async function handleLogoUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    cloudSettings.logo = e.target.result;
+                    await saveCloudSettings();
+                    alert('✅ تم حفظ وتثبيت الشعار في السحابة بنجاح لكافة الأجهزة والمتصفحات!');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function fetchCloudData() {
+            try {
+                const [stRes, ctRes] = await Promise.all([
+                    supabaseClient.from('students').select('cls'),
+                    supabaseClient.from('class_teachers').select('*')
+                ]);
+
+                if (ctRes.data) classTeachersAssignments = ctRes.data;
+
+                const roleVal = currentUser ? String(currentUser.role || '').trim().toLowerCase() : 'teacher';
+                const isTeacher = (roleVal === 'teacher' || roleVal === 'معلم');
+
+                if (isTeacher && currentUser.name) {
+                    const { data: teacherCtData } = await supabaseClient
+                        .from('class_teachers')
+                        .select('cls')
+                        .eq('teacher_name', currentUser.name);
+                    
+                    if (teacherCtData) {
+                        teacherAssignedClassesList = teacherCtData.map(item => String(item.cls).trim());
+                    }
+                }
+
+                let sectionsSet = new Set();
+                if (stRes.data) {
+                    stRes.data.forEach(st => {
+                        let c = st.cls ? String(st.cls).trim() : '';
+                        if (c) sectionsSet.add(c);
+                    });
+                }
+
+                cloudSections = Array.from(sectionsSet).sort();
+                if (cloudSections.length === 0) {
+                    cloudSections = ['3ب1', '3ب2', '4ب1', '4ب2', '4ب3', '5ب1', '5ب2', '5ب3', '6ب1', '6ب2'];
+                }
+
+                updateSectionsFilter();
+            } catch (err) {
+                console.error("Error fetching cloud data:", err);
+                cloudSections = ['3ب1', '3ب2', '4ب1', '4ب2', '4ب3', '5ب1', '5ب2', '5ب3', '6ب1', '6ب2'];
+                updateSectionsFilter();
+            }
+        }
+
+        function updateSectionsFilter() {
+            const gradeVal = document.getElementById('filterGrade').value;
+            const selectEl = document.getElementById('filterSections');
+            selectEl.innerHTML = '';
+
+            const roleVal = currentUser ? String(currentUser.role || '').trim().toLowerCase() : 'teacher';
+            const isTeacher = (roleVal === 'teacher' || roleVal === 'معلم');
+            
+            let availableSections = isTeacher ? teacherAssignedClassesList : cloudSections;
+
+            let filtered = availableSections;
+            if (gradeVal !== 'all') {
+                filtered = availableSections.filter(s => s.startsWith(gradeVal));
+            }
+
+            if (filtered.length === 0) {
+                let opt = document.createElement('option');
+                opt.disabled = true;
+                opt.textContent = isTeacher ? 'لا توجد صفوف مسندة لحسابك في السحابة' : 'لا توجد شعب مسجلة في السحابة';
+                selectEl.appendChild(opt);
+                return;
+            }
+
+            filtered.forEach(sec => {
+                let opt = document.createElement('option');
+                opt.value = sec;
+                opt.textContent = `الشعبة: ${sec}`;
+                opt.selected = true;
+                selectEl.appendChild(opt);
+            });
+        }
+
+        function getTeacherNameForSection(sec) {
+            let foundInCT = classTeachersAssignments.find(item => item.cls === sec);
+            if (foundInCT && foundInCT.teacher_name) {
+                return foundInCT.teacher_name;
+            }
+            return 'غير مسند';
+        }
+
+        async function generateReport() {
+            const selectedOptions = Array.from(document.getElementById('filterSections').selectedOptions).map(o => o.value);
+            if (selectedOptions.length === 0) {
+                alert('⚠️ يرجى اختيار فرقة (شعبة) واحدة على الأقل لتوليد التقرير.');
+                return;
+            }
+
+            const reportScope = document.getElementById('reportScope').value;
+            const activeCols = Array.from(document.querySelectorAll('.col-check:checked')).map(c => c.value);
+            const container = document.getElementById('reportPreviewContent');
+            container.innerHTML = '<div style="text-align:center; padding:20px;">جاري إعداد التقارير...</div>';
+            document.getElementById('reportOutputCard').classList.remove('hidden');
+
+            try {
+                const { data: studentsDbData } = await supabaseClient.from('students').select('*');
+                
+                const [rocket, goldmine, mountain, snake] = await Promise.all([
+                    supabaseClient.from('rocket_scores').select('*'),
+                    supabaseClient.from('goldmine_scores').select('*'),
+                    supabaseClient.from('mountain_scores').select('*'),
+                    supabaseClient.from('snake_scores').select('*')
+                ]);
+
+                let studentsMap = {};
+
+                if (reportScope === 'all' && studentsDbData) {
+                    studentsDbData.forEach(st => {
+                        let name = st.name || st.student_name;
+                        let cls = st.cls || st.class_name || 'غير مصنف';
+                        let key = name + '_' + cls;
+                        studentsMap[key] = { name, cls, rocket: 0, goldmine: 0, mountain: 0, snake: 0, total: 0 };
+                    });
+                }
+
+                function processScores(data, gameKey) {
+                    if (!data) return;
+                    data.forEach(item => {
+                        let name = item.student_name;
+                        let cls = item.cls || 'غير مصنف';
+                        let key = name + '_' + cls;
+                        if (!studentsMap[key]) {
+                            studentsMap[key] = { name, cls, rocket: 0, goldmine: 0, mountain: 0, snake: 0, total: 0 };
+                        }
+                        let pts = item.points || 0;
+                        studentsMap[key][gameKey] = Math.max(studentsMap[key][gameKey], pts);
+                    });
+                }
+
+                processScores(rocket.data, 'rocket');
+                processScores(goldmine.data, 'goldmine');
+                processScores(mountain.data, 'mountain');
+                processScores(snake.data, 'snake');
+
+                let allStudents = Object.values(studentsMap).map(s => {
+                    s.total = s.rocket + s.goldmine + s.mountain + s.snake;
+                    return s;
+                });
+
+                let sortedForRank = [...allStudents].sort((a, b) => b.total - a.total);
+
+                let htmlContent = '';
+
+                selectedOptions.forEach((sec) => {
+                    let secStudents = allStudents.filter(s => s.cls === sec);
+
+                    // ترتيب الطلاب أبجدياً
+                    secStudents.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'ar'));
+
+                    let teacherName = getTeacherNameForSection(sec);
+
+                    htmlContent += `<div class="report-single-page">`;
+
+                    htmlContent += `
+                        <div>
+                            <div class="report-header">
+                                ${cloudSettings.logo ? `<img src="${cloudSettings.logo}" class="report-logo">` : ''}
+                                <div class="report-title">تقرير أداء الطلاب - الشعبة (${sec})</div>
+                                <div class="teacher-info">معلم الصف: ${teacherName}</div>
+                            </div>
+                    `;
+
+                    if (secStudents.length === 0) {
+                        htmlContent += `<p style="text-align:center; color:#666; padding:15px;">لا توجد بيانات مسجلة لطلاب هذه الشعبة.</p>`;
+                    } else {
+                        htmlContent += `<table class="report-table"><thead><tr>`;
+                        
+                        if (activeCols.includes('name')) htmlContent += `<th>اسم الطالب</th>`;
+                        if (activeCols.includes('cls')) htmlContent += `<th>الفرقة</th>`;
+                        if (activeCols.includes('total')) htmlContent += `<th>المجموع</th>`;
+                        if (activeCols.includes('rocket')) htmlContent += `<th>الصواريخ</th>`;
+                        if (activeCols.includes('goldmine')) htmlContent += `<th>المنجم</th>`;
+                        if (activeCols.includes('mountain')) htmlContent += `<th>القمة</th>`;
+                        if (activeCols.includes('snake')) htmlContent += `<th>الحية والسلم</th>`;
+                        if (activeCols.includes('rank_school')) htmlContent += `<th>تصنيف المدرسة</th>`;
+                        if (activeCols.includes('rank_section')) htmlContent += `<th>تصنيف الفرقة</th>`;
+                        if (activeCols.includes('rank_grade')) htmlContent += `<th>تصنيف المرحلة</th>`;
+
+                        htmlContent += `</tr></thead><tbody>`;
+
+                        secStudents.forEach((st) => {
+                            let rankSchool = sortedForRank.findIndex(x => x.name === st.name && x.cls === st.cls) + 1;
+                            
+                            let sectionRankList = allStudents.filter(x => x.cls === sec).sort((a, b) => b.total - a.total);
+                            let rankSection = sectionRankList.findIndex(x => x.name === st.name && x.cls === st.cls) + 1;
+                            
+                            let gradePrefix = sec.charAt(0);
+                            let gradeStudents = allStudents.filter(x => x.cls.startsWith(gradePrefix)).sort((a, b) => b.total - a.total);
+                            let rankGrade = gradeStudents.findIndex(x => x.name === st.name && x.cls === st.cls) + 1;
+
+                            htmlContent += `<tr>`;
+                            if (activeCols.includes('name')) htmlContent += `<td style="text-align:right; font-weight:bold; padding-right:4px;">${st.name}</td>`;
+                            if (activeCols.includes('cls')) htmlContent += `<td>${st.cls}</td>`;
+                            if (activeCols.includes('total')) htmlContent += `<td style="color:var(--primary); font-weight:bold;">⭐ ${st.total}</td>`;
+                            if (activeCols.includes('rocket')) htmlContent += `<td>${st.rocket}</td>`;
+                            if (activeCols.includes('goldmine')) htmlContent += `<td>${st.goldmine}</td>`;
+                            if (activeCols.includes('mountain')) htmlContent += `<td>${st.mountain}</td>`;
+                            if (activeCols.includes('snake')) htmlContent += `<td>${st.snake}</td>`;
+                            if (activeCols.includes('rank_school')) htmlContent += `<td>المركز ${rankSchool}</td>`;
+                            if (activeCols.includes('rank_section')) htmlContent += `<td>المركز ${rankSection}</td>`;
+                            if (activeCols.includes('rank_grade')) htmlContent += `<td>المركز ${rankGrade}</td>`;
+                            htmlContent += `</tr>`;
+                        });
+
+                        htmlContent += `</tbody></table>`;
+                    }
+
+                    htmlContent += `</div>`;
+
+                    // جدول التذييل الـ 5 المخصص في أسفل الصفحة الواحدة
+                    htmlContent += `
+                        <table class="footer-table">
+                            <tr>
+                                <td><textarea class="footer-editable-cell" style="font-size: ${cloudSettings.fSize};">${cloudSettings.foot1}</textarea></td>
+                                <td><textarea class="footer-editable-cell" style="font-size: ${cloudSettings.fSize};">${cloudSettings.foot2}</textarea></td>
+                                <td><textarea class="footer-editable-cell" style="font-size: ${cloudSettings.fSize};">${cloudSettings.foot3}</textarea></td>
+                                <td><textarea class="footer-editable-cell" style="font-size: ${cloudSettings.fSize};">${cloudSettings.foot4}</textarea></td>
+                                <td><textarea class="footer-editable-cell" style="font-size: ${cloudSettings.fSize};">${cloudSettings.foot5}</textarea></td>
+                            </tr>
+                        </table>
+                    `;
+
+                    htmlContent += `</div>`;
+                });
+
+                container.innerHTML = htmlContent;
+
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = `<p style="color:red; text-align:center;">حدث خطأ أثناء جلب بيانات التقارير.</p>`;
+            }
+        }
+
+        function exportToExcel() {
+            const previewArea = document.getElementById('reportPreviewContent');
+            const tables = previewArea.querySelectorAll('table.report-table');
+            if (tables.length === 0) {
+                alert('⚠️ لا توجد بيانات لتصديرها.');
+                return;
+            }
+
+            let wb = XLSX.utils.book_new();
+            const selectedOptions = Array.from(document.getElementById('filterSections').selectedOptions).map(o => o.value);
+            
+            tables.forEach((table, idx) => {
+                let ws = XLSX.utils.table_to_sheet(table);
+                let sheetName = selectedOptions[idx] || `الشعبة_${idx+1}`;
+                XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            });
+
+            XLSX.writeFile(wb, 'Farosan_Reports.xlsx');
+        }
+
+        function logout() {
+            localStorage.removeItem('current_staff_user');
+            window.location.href = 'staff.html';
+        }
+    </script>
+</body>
+</html>
             --primary-hover: #ad1457;
             --bg: #f4f7f6;
             --card-bg: #ffffff;
