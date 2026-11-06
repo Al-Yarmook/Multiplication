@@ -19,52 +19,57 @@
         * { touch-action: manipulation; box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; user-select: none; }
         body { background-color: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4px; overflow: hidden; }
 
-        .game-container { max-width: 900px; width: 100%; height: 98vh; max-height: 620px; background: white; border-radius: 12px; padding: 10px 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); display: flex; flex-direction: column; position: relative; border-top: 5px solid var(--primary); overflow: hidden; }
+        .game-container { max-width: 950px; width: 100%; height: 98vh; max-height: 650px; background: white; border-radius: 12px; padding: 10px 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); display: flex; flex-direction: column; position: relative; border-top: 5px solid var(--primary); overflow: hidden; }
 
-        .hud { display: flex; justify-content: space-around; width: 100%; font-size: 11px; font-weight: bold; background: #f8fafc; padding: 6px 10px; border-radius: 6px; margin-bottom: 6px; border: 1px solid #e2e8f0; }
+        .hud { display: flex; justify-content: space-around; width: 100%; font-size: 12px; font-weight: bold; background: #f8fafc; padding: 6px 10px; border-radius: 6px; margin-bottom: 6px; border: 1px solid #e2e8f0; }
         .hud span { color: var(--primary); }
 
+        /* تخطيط جانبي: لوحة كبيرة يميناً/يساراً وخيارات أصغر */
         .game-main-layout { display: flex; flex-direction: row; gap: 20px; width: 100%; flex: 1; align-items: center; justify-content: center; overflow: hidden; }
 
-        .board-wrapper { position: relative; width: 300px; height: 300px; flex-shrink: 0; }
-        .board-grid { display: grid; gap: 2px; width: 100%; height: 100%; background: #334155; padding: 4px; border-radius: 8px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.3); position: relative; z-index: 2; overflow-y: auto; max-height: 290px; }
+        .board-wrapper { position: relative; width: 360px; height: 360px; flex-shrink: 0; }
+        .board-grid { display: grid; gap: 2px; width: 100%; height: 100%; background: #334155; padding: 4px; border-radius: 8px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.3); position: relative; z-index: 2; overflow-y: auto; max-height: 350px; }
         
         #boardCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
 
-        .cell { background: #f8fafc; border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; position: relative; border: 1px solid #cbd5e1; color: #334155; aspect-ratio: 1; }
+        /* تكبير أرقام المربعات لتكون واضحة جداً */
+        .cell { background: #f8fafc; border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 15px; font-weight: 900; position: relative; border: 1px solid #cbd5e1; color: #1e293b; aspect-ratio: 1; }
         .cell.ladder { background: #dcfce7; border-color: #86efac; color: #16a34a; }
         .cell.snake { background: #fee2e2; border-color: #fca5a5; color: #dc2626; }
-        .player-token { position: absolute; font-size: 18px; z-index: 10; transition: transform 0.2s ease-in-out, left 0.2s ease-in-out, top 0.2s ease-in-out; }
+        
+        /* تكبير شخصية اللاعب */
+        .player-token { position: absolute; font-size: 26px; z-index: 10; transition: transform 0.2s ease-in-out, left 0.2s ease-in-out, top 0.2s ease-in-out; }
         .player-token.face-left { transform: scaleX(-1); }
 
-        .side-panel { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; max-width: 480px; }
+        .side-panel { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; max-width: 420px; }
 
         .dice-section { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-        .dice-box { width: 50px; height: 50px; background: white; border: 2px solid var(--primary); border-radius: 8px; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); padding: 5px; box-shadow: 0 3px 8px rgba(216,27,96,0.2); cursor: pointer; transition: 0.2s; }
+        .dice-box { width: 45px; height: 45px; background: white; border: 2px solid var(--primary); border-radius: 8px; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); padding: 4px; box-shadow: 0 3px 8px rgba(216,27,96,0.2); cursor: pointer; transition: 0.2s; }
         .dice-box.rolling { animation: shake 0.4s infinite; }
         .dice-box.big-overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(2.5); z-index: 150; box-shadow: 0 10px 30px rgba(0,0,0,0.4); background: white; }
         
-        .dice-dot { background-color: var(--primary); border-radius: 50%; width: 6px; height: 6px; align-self: center; justify-self: center; opacity: 0; }
+        .dice-dot { background-color: var(--primary); border-radius: 50%; width: 5px; height: 5px; align-self: center; justify-self: center; opacity: 0; }
         .dice-dot.show { opacity: 1; }
 
         @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(-10deg); } 50% { transform: rotate(10deg); } 100% { transform: rotate(0deg); } }
 
-        .question-card { background: #ffffff; border: 2px solid var(--primary); padding: 10px 14px; width: 100%; text-align: center; border-radius: 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.04); }
-        .question-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-        .mini-dice { width: 28px; height: 28px; border: 2px solid var(--primary); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold; color: var(--primary); background: #fff; }
+        /* تصغير حجم الخيارات وكرت الأسئلة لتكون مدمجة وخفيفة */
+        .question-card { background: #ffffff; border: 2px solid var(--primary); padding: 8px 12px; width: 100%; text-align: center; border-radius: 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.04); }
+        .question-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+        .mini-dice { width: 24px; height: 24px; border: 2px solid var(--primary); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: var(--primary); background: #fff; }
 
-        .q-title { font-size: 12px; font-weight: bold; color: #64748b; }
-        .q-box { font-size: 20px; font-weight: 900; color: var(--primary); margin-bottom: 8px; }
+        .q-title { font-size: 11px; font-weight: bold; color: #64748b; }
+        .q-box { font-size: 17px; font-weight: 900; color: var(--primary); margin-bottom: 6px; }
 
-        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; }
-        .opt-btn { background: #ffffff; border: 2px solid var(--primary); color: var(--primary); padding: 8px; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.2s; font-family: 'Cairo'; }
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; width: 100%; }
+        .opt-btn { background: #ffffff; border: 2px solid var(--primary); color: var(--primary); padding: 6px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s; font-family: 'Cairo'; }
         .opt-btn:hover { background: var(--primary); color: white; }
 
-        .answer-display { background: #f8fafc; border: 2px solid #cbd5e1; border-radius: 6px; padding: 4px; font-size: 16px; font-weight: bold; color: #1e293b; min-height: 32px; width: 100%; max-width: 180px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 6px; letter-spacing: 2px; }
-        .keypad-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; width: 100%; max-width: 300px; margin: 0 auto; }
-        .key-btn { background: #ffffff; border: 2px solid #cbd5e1; color: var(--text); padding: 5px 0; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; transition: 0.15s; font-family: 'Cairo'; }
+        .answer-display { background: #f8fafc; border: 2px solid #cbd5e1; border-radius: 6px; padding: 3px; font-size: 14px; font-weight: bold; color: #1e293b; min-height: 28px; width: 100%; max-width: 150px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 4px; letter-spacing: 2px; }
+        .keypad-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; width: 100%; max-width: 260px; margin: 0 auto; }
+        .key-btn { background: #ffffff; border: 2px solid #cbd5e1; color: var(--text); padding: 4px 0; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.15s; font-family: 'Cairo'; }
         .key-btn:hover { background: #e2e8f0; border-color: var(--primary); color: var(--primary); }
-        .action-row { display: flex; gap: 5px; width: 100%; max-width: 300px; margin-top: 4px; }
+        .action-row { display: flex; gap: 4px; width: 100%; max-width: 260px; margin-top: 3px; }
         .key-btn.action-clear { background: #fee2e2; color: #dc2626; border-color: #fca5a5; flex: 1; }
         .key-btn.action-reset { background: #fef3c7; color: #d97706; border-color: #fde68a; flex: 1; }
         .key-btn.action-submit { background: #dcfce7; color: #16a34a; border-color: #86efac; flex: 2; }
@@ -97,7 +102,7 @@
             <div class="instructions-box">
                 <ul>
                     <li>🎲 <b>رمي النرد:</b> انقر على النرد للنقاط الدقيقة والتقدم. الوصول للنهاية يتطلب رمية دقيقة بالضبط!</li>
-                    <li>🪜 <b>السلالم والثعابين:</b> سلالم خشبية متكاملة وثعابين مرسومة باحترافية وانسيابية بين المربعات.</li>
+                    <li>🪜 <b>السلالم والثعابين:</b> سلالم رفيعة وثعابين انسيابية شفافة لا تغطي على أرقام المربعات.</li>
                     <li>⭐ <b>النقاط والوقت:</b> حساب الزمن ومزامنة الترتيب في لوحة الشرف تلقائياً.</li>
                 </ul>
             </div>
@@ -112,7 +117,7 @@
             <div>📍 المربع: <span id="posVal">١</span> / <span id="maxPosVal">٥٠</span></div>
         </div>
 
-        <!-- التخطيط الجنبي الثابت داخل الشاشة -->
+        <!-- التخطيط الجانبي الثابت -->
         <div class="game-main-layout">
             <div class="board-wrapper">
                 <div class="board-grid" id="boardGrid"></div>
@@ -121,7 +126,7 @@
 
             <div class="side-panel" id="gamePlayArea">
                 <div class="dice-section" id="diceSection">
-                    <div style="font-weight: bold; font-size: 13px; color: #475569;">ارمِ النرد للتحرك:</div>
+                    <div style="font-weight: bold; font-size: 12px; color: #475569;">ارمِ النرد للتحرك:</div>
                     <div class="dice-box" id="diceBox" onclick="rollDice()">
                         <div class="dice-dot" id="d-0"></div><div class="dice-dot" id="d-1"></div><div class="dice-dot" id="d-2"></div>
                         <div class="dice-dot" id="d-3"></div><div class="dice-dot" id="d-4"></div><div class="dice-dot" id="d-5"></div>
@@ -246,22 +251,22 @@
         }
 
         let snakeSettings = {
-            maxSquares: 30,
+            maxSquares: 50,
             correctPoints: 50,
             wrongPenalty: 20,
             ladderBonus: 100,
             snakePenalty: 50
         };
 
-        // دالة تحميل الإعدادات مع ربط totalStages بقيمة maxSquares بدقة تامة
+        // دالة تحميل الإعدادات وقراءة عدد المراحل بدقة من totalStages أو maxSquares
         async function loadSnakeSettings() {
             try {
                 const { data } = await supabaseClient.from('game_settings').select('value').eq('key', 'snake_game_settings').single();
                 if (data && data.value) {
                     snakeSettings = { ...snakeSettings, ...data.value };
-                    // مزامنة عدد المراحل من المفتاح الصحيح totalStages الموجود في قاعدة البيانات
-                    if (data.value.totalStages) {
-                        snakeSettings.maxSquares = parseInt(data.value.totalStages);
+                    let stagesVal = data.value.totalStages || data.value.maxSquares || data.value.stages || data.value.squares;
+                    if (stagesVal) {
+                        snakeSettings.maxSquares = parseInt(stagesVal);
                     }
                 }
             } catch (e) {}
@@ -294,25 +299,39 @@
             }
         }
 
+        // دالة توزيع السلالم والثعابين بناءً على المراحل تماماً كما طلبت:
+        // 30 مرحلة -> سلالم وثعبانين (2)
+        // 50 مرحلة -> 3 سلالم و3 ثعابين
+        // 100 مرحلة -> 5 سلالم و5 ثعابين
         function generateBoardHazards() {
             ladders = {};
             snakes = {};
             let max = snakeSettings.maxSquares;
             
-            let count = max >= 40 ? 5 : 3;
+            let hazardCount = 3;
+            if (max <= 30) {
+                hazardCount = 2;
+            } else if (max <= 50) {
+                hazardCount = 3;
+            } else if (max <= 100) {
+                hazardCount = 5;
+            } else {
+                hazardCount = Math.min(7, Math.floor(max / 20));
+            }
+
             let available = [];
-            for(let i=2; i<max-3; i++) available.push(i);
+            for(let i=2; i<max-2; i++) available.push(i);
             available.sort(() => Math.random() - 0.5);
 
-            for(let i=0; i<count && available.length > 0; i++) {
+            for(let i=0; i<hazardCount && available.length > 0; i++) {
                 let start = available.pop();
-                let end = start + Math.floor(Math.random() * 6) + 4;
+                let end = start + Math.floor(Math.random() * 5) + 3;
                 if(end < max) ladders[start] = end;
             }
 
-            for(let i=0; i<count && available.length > 0; i++) {
+            for(let i=0; i<hazardCount && available.length > 0; i++) {
                 let start = available.pop();
-                let end = start - (Math.floor(Math.random() * 5) + 3);
+                let end = start - (Math.floor(Math.random() * 4) + 2);
                 if(end > 1) snakes[start] = end;
             }
         }
@@ -353,7 +372,7 @@
             setTimeout(drawBoardLines, 50);
         }
 
-        // رسم حقيقي ومجسم للسلالم (عوارض خشبية ودرجات بارزة) والثعابين (أجسام سميكة ذات رأس وعيون)
+        // رسم سلالم وثعابين رفيعة ذات شفافية عالية (globalAlpha = 0.55) لكي تبقى أرقام المراحل واضحة جداً
         function drawBoardLines() {
             const canvas = document.getElementById('boardCanvas');
             const wrapper = document.querySelector('.board-wrapper');
@@ -362,7 +381,10 @@
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // 1. رسم السلالم (سلالم خشبية متكاملة)
+            // تطبيق الشفافية على كافة الخطوط والرسومات لعدم حجب الأرقام
+            ctx.globalAlpha = 0.55;
+
+            // 1. رسم السلالم الرفيعة والمتناسقة
             for (let start in ladders) {
                 let end = ladders[start];
                 let sEl = document.getElementById(`cell-${start}`);
@@ -373,31 +395,30 @@
                     let x2 = eEl.offsetLeft + eEl.offsetWidth / 2;
                     let y2 = eEl.offsetTop + eEl.offsetHeight / 2;
 
-                    ctx.strokeStyle = '#b45309';
-                    ctx.lineWidth = 10;
+                    ctx.strokeStyle = '#16a34a';
+                    ctx.lineWidth = 5;
                     ctx.lineCap = 'round';
                     ctx.beginPath();
-                    ctx.moveTo(x1 - 8, y1); ctx.lineTo(x2 - 8, y2);
-                    ctx.moveTo(x1 + 8, y1); ctx.lineTo(x2 + 8, y2);
+                    ctx.moveTo(x1 - 5, y1); ctx.lineTo(x2 - 5, y2);
+                    ctx.moveTo(x1 + 5, y1); ctx.lineTo(x2 + 5, y2);
                     ctx.stroke();
 
-                    ctx.strokeStyle = '#f59e0b';
-                    ctx.lineWidth = 5;
-                    let stepsCount = 5;
+                    ctx.lineWidth = 2.5;
+                    let stepsCount = 4;
                     for (let s = 1; s < stepsCount; s++) {
                         let t = s / stepsCount;
                         let mx = x1 + (x2 - x1) * t;
                         let my = y1 + (y2 - y1) * t;
                         ctx.beginPath();
-                        ctx.moveTo(mx - 10, my);
-                        ctx.lineTo(mx + 10, my);
+                        ctx.moveTo(mx - 6, my);
+                        ctx.lineTo(mx + 6, my);
                         ctx.stroke();
                     }
                 }
             }
 
-            // 2. رسم الثعابين (ثعابين سميكة مجسمة مع رأس وعيون واضحة)
-            let snakeColors = ['#16a34a', '#ca8a04', '#ea580c'];
+            // 2. رسم الثعابين الرفيعة والشفافة مع رأس صغير
+            let snakeColors = ['#16a34a', '#ca8a04', '#ea580c', '#0284c7'];
             let colorIndex = 0;
 
             for (let start in snakes) {
@@ -414,43 +435,25 @@
                     colorIndex++;
 
                     ctx.strokeStyle = snakeColor;
-                    ctx.lineWidth = 14;
+                    ctx.lineWidth = 7;
                     ctx.lineCap = 'round';
                     ctx.beginPath();
                     ctx.moveTo(x1, y1);
-                    let cpX1 = (x1 + x2) / 2 + 35;
-                    let cpY1 = (y1 + y2) / 2 - 25;
-                    let cpX2 = (x1 + x2) / 2 - 35;
-                    let cpY2 = (y1 + y2) / 2 + 25;
+                    let cpX1 = (x1 + x2) / 2 + 25;
+                    let cpY1 = (y1 + y2) / 2 - 20;
+                    let cpX2 = (x1 + x2) / 2 - 25;
+                    let cpY2 = (y1 + y2) / 2 + 20;
                     ctx.bezierCurveTo(cpX1, cpY1, cpX2, cpY2, x2, y2);
                     ctx.stroke();
 
-                    ctx.strokeStyle = '#ffffff';
-                    ctx.lineWidth = 4;
-                    ctx.globalAlpha = 0.5;
-                    ctx.stroke();
-                    ctx.globalAlpha = 1.0;
-
+                    // رأس الثعبان الصغير الشفاف
                     ctx.fillStyle = snakeColor;
                     ctx.beginPath();
-                    ctx.arc(x1, y1, 12, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.strokeStyle = '#000';
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
-
-                    ctx.fillStyle = '#fff';
-                    ctx.beginPath();
-                    ctx.arc(x1 - 4, y1 - 3, 3, 0, Math.PI * 2);
-                    ctx.arc(x1 + 4, y1 - 3, 3, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.fillStyle = '#000';
-                    ctx.beginPath();
-                    ctx.arc(x1 - 4, y1 - 3, 1, 0, Math.PI * 2);
-                    ctx.arc(x1 + 4, y1 - 3, 1, 0, Math.PI * 2);
+                    ctx.arc(x1, y1, 8, 0, Math.PI * 2);
                     ctx.fill();
                 }
             }
+            ctx.globalAlpha = 1.0; // استعادة العرض العادي لباقي العناصر
         }
 
         function updatePlayerToken(customPos = currentPosition) {
