@@ -17,32 +17,35 @@
             --text: #1e293b;
         }
         * { touch-action: manipulation; box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; user-select: none; }
-        body { background-color: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4px; overflow: hidden; }
+        body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4px; overflow-x: hidden; }
 
-        .game-container { max-width: 980px; width: 100%; height: 98vh; max-height: 660px; background: white; border-radius: 12px; padding: 8px 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); display: flex; flex-direction: column; position: relative; border-top: 5px solid var(--primary); overflow: hidden; }
+        .game-container { max-width: 950px; width: 100%; background: white; border-radius: 12px; padding: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); display: flex; flex-direction: column; position: relative; border-top: 5px solid var(--primary); margin: auto; }
 
-        .hud { display: flex; justify-content: space-around; width: 100%; font-size: 11px; font-weight: bold; background: #f8fafc; padding: 5px 8px; border-radius: 6px; margin-bottom: 4px; border: 1px solid #e2e8f0; }
+        .hud { display: flex; justify-content: space-around; width: 100%; font-size: 11px; font-weight: bold; background: #f8fafc; padding: 6px 8px; border-radius: 6px; margin-bottom: 8px; border: 1px solid #e2e8f0; }
         .hud span { color: var(--primary); }
 
-        .game-main-layout { display: flex; flex-direction: row; gap: 15px; width: 100%; flex: 1; align-items: center; justify-content: center; overflow: hidden; }
+        /* تخطيط متجاوب يتكيف تلقائياً بين الموبايل واللابتوب */
+        .game-main-layout { display: flex; flex-direction: row; gap: 15px; width: 100%; align-items: center; justify-content: center; }
+        @media (max-width: 768px) {
+            .game-main-layout { flex-direction: column; gap: 10px; }
+        }
 
-        /* جعل اللوحة مربعة تماماً ومتناسقة */
-        .board-wrapper { position: relative; width: 400px; height: 400px; aspect-ratio: 1 / 1; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        .board-wrapper { position: relative; width: 380px; height: 380px; max-width: 85vw; max-height: 85vw; aspect-ratio: 1 / 1; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
         .board-grid { display: grid; gap: 2px; width: 100%; height: 100%; background: #334155; padding: 4px; border-radius: 8px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.3); position: relative; z-index: 2; }
         
         #boardCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
 
-        .cell { background: #f8fafc; border-radius: 3px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 900; position: relative; border: 1px solid #cbd5e1; color: #1e293b; aspect-ratio: 1; }
+        .cell { background: #f8fafc; border-radius: 2px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 900; position: relative; border: 1px solid #cbd5e1; color: #1e293b; aspect-ratio: 1; }
         .cell.ladder { background: #dcfce7; border-color: #86efac; color: #16a34a; }
         .cell.snake { background: #fee2e2; border-color: #fca5a5; color: #dc2626; }
         
-        .player-token { position: absolute; font-size: 22px; z-index: 10; transition: transform 0.2s ease-in-out, left 0.2s ease-in-out, top 0.2s ease-in-out; }
+        .player-token { position: absolute; font-size: 20px; z-index: 10; transition: transform 0.2s ease-in-out, left 0.2s ease-in-out, top 0.2s ease-in-out; }
         .player-token.face-left { transform: scaleX(-1); }
 
-        .side-panel { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; max-width: 380px; }
+        .side-panel { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; max-width: 380px; }
 
         .dice-section { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-        .dice-box { width: 42px; height: 42px; background: white; border: 2px solid var(--primary); border-radius: 8px; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); padding: 4px; box-shadow: 0 3px 8px rgba(216,27,96,0.2); cursor: pointer; transition: 0.2s; }
+        .dice-box { width: 45px; height: 45px; background: white; border: 2px solid var(--primary); border-radius: 8px; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); padding: 4px; box-shadow: 0 3px 8px rgba(216,27,96,0.2); cursor: pointer; transition: 0.2s; }
         .dice-box.rolling { animation: shake 0.4s infinite; }
         .dice-box.big-overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(2.5); z-index: 150; box-shadow: 0 10px 30px rgba(0,0,0,0.4); background: white; }
         
@@ -51,22 +54,22 @@
 
         @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(-10deg); } 50% { transform: rotate(10deg); } 100% { transform: rotate(0deg); } }
 
-        .question-card { background: #ffffff; border: 2px solid var(--primary); padding: 6px 10px; width: 100%; text-align: center; border-radius: 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.04); }
+        .question-card { background: #ffffff; border: 2px solid var(--primary); padding: 8px 12px; width: 100%; text-align: center; border-radius: 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.04); }
         .question-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
-        .mini-dice { width: 22px; height: 22px; border: 2px solid var(--primary); border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: var(--primary); background: #fff; }
+        .mini-dice { width: 24px; height: 24px; border: 2px solid var(--primary); border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: var(--primary); background: #fff; }
 
-        .q-title { font-size: 10px; font-weight: bold; color: #64748b; }
-        .q-box { font-size: 15px; font-weight: 900; color: var(--primary); margin-bottom: 4px; }
+        .q-title { font-size: 11px; font-weight: bold; color: #64748b; }
+        .q-box { font-size: 16px; font-weight: 900; color: var(--primary); margin-bottom: 6px; }
 
-        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; width: 100%; }
-        .opt-btn { background: #ffffff; border: 2px solid var(--primary); color: var(--primary); padding: 5px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; font-family: 'Cairo'; }
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; width: 100%; }
+        .opt-btn { background: #ffffff; border: 2px solid var(--primary); color: var(--primary); padding: 6px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s; font-family: 'Cairo'; }
         .opt-btn:hover { background: var(--primary); color: white; }
 
-        .answer-display { background: #f8fafc; border: 2px solid #cbd5e1; border-radius: 6px; padding: 2px; font-size: 13px; font-weight: bold; color: #1e293b; min-height: 26px; width: 100%; max-width: 140px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 3px; letter-spacing: 2px; }
-        .keypad-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; width: 100%; max-width: 240px; margin: 0 auto; }
-        .key-btn { background: #ffffff; border: 2px solid #cbd5e1; color: var(--text); padding: 3px 0; border-radius: 5px; font-size: 11px; font-weight: bold; cursor: pointer; transition: 0.15s; font-family: 'Cairo'; }
+        .answer-display { background: #f8fafc; border: 2px solid #cbd5e1; border-radius: 6px; padding: 2px; font-size: 14px; font-weight: bold; color: #1e293b; min-height: 28px; width: 100%; max-width: 150px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 4px; letter-spacing: 2px; }
+        .keypad-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; width: 100%; max-width: 260px; margin: 0 auto; }
+        .key-btn { background: #ffffff; border: 2px solid #cbd5e1; color: var(--text); padding: 4px 0; border-radius: 5px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.15s; font-family: 'Cairo'; }
         .key-btn:hover { background: #e2e8f0; border-color: var(--primary); color: var(--primary); }
-        .action-row { display: flex; gap: 3px; width: 100%; max-width: 240px; margin-top: 3px; }
+        .action-row { display: flex; gap: 3px; width: 100%; max-width: 260px; margin-top: 3px; }
         .key-btn.action-clear { background: #fee2e2; color: #dc2626; border-color: #fca5a5; flex: 1; }
         .key-btn.action-reset { background: #fef3c7; color: #d97706; border-color: #fde68a; flex: 1; }
         .key-btn.action-submit { background: #dcfce7; color: #16a34a; border-color: #86efac; flex: 2; }
@@ -84,7 +87,7 @@
         .results-table th, .results-table td { padding: 5px; border-bottom: 1px solid #e2e8f0; text-align: center; }
         .results-table th { background: #f1f5f9; color: var(--primary); }
 
-        .btn { background: var(--primary); color: white; border: none; padding: 5px 15px; font-size: 12px; font-weight: bold; border-radius: 6px; cursor: pointer; font-family: 'Cairo'; transition: 0.3s; text-decoration: none; display: inline-block; }
+        .btn { background: var(--primary); color: white; border: none; padding: 6px 16px; font-size: 12px; font-weight: bold; border-radius: 6px; cursor: pointer; font-family: 'Cairo'; transition: 0.3s; text-decoration: none; display: inline-block; }
         .btn:hover { background: var(--primary-hover); transform: translateY(-2px); }
         .btn-dark { background: #334155; }
         .hidden { display: none !important; }
@@ -111,10 +114,10 @@
             <div>البطل: <span id="playerName">بطل</span></div>
             <div>⭐ النقاط: <span id="scoreVal">٠</span></div>
             <div>⏱️ الوقت: <span id="timerVal">٠٠:٠٠</span></div>
-            <div>📍 المربع: <span id="posVal">١</span> / <span id="maxPosVal">٣٦</span></div>
+            <div>📍 المربع: <span id="posVal">١</span> / <span id="maxPosVal">١٠٠</span></div>
         </div>
 
-        <!-- التخطيط الجانبي الثابت -->
+        <!-- التخطيط المتجاوب -->
         <div class="game-main-layout">
             <div class="board-wrapper">
                 <div class="board-grid" id="boardGrid"></div>
@@ -248,7 +251,7 @@
         }
 
         let snakeSettings = {
-            maxSquares: 36,
+            maxSquares: 100,
             correctPoints: 50,
             wrongPenalty: 20,
             ladderBonus: 100,
@@ -300,11 +303,10 @@
             snakes = {};
             let max = snakeSettings.maxSquares;
             
-            let hazardCount = 2;
+            let hazardCount = 5;
             if (max <= 30) hazardCount = 2;
             else if (max <= 50) hazardCount = 3;
-            else if (max <= 100) hazardCount = 5;
-            else hazardCount = Math.min(7, Math.floor(max / 20));
+            else hazardCount = 5;
 
             let available = [];
             for(let i=2; i<max-2; i++) available.push(i);
@@ -312,13 +314,13 @@
 
             for(let i=0; i<hazardCount && available.length > 0; i++) {
                 let start = available.pop();
-                let end = start + Math.floor(Math.random() * 4) + 3;
+                let end = start + Math.floor(Math.random() * 6) + 4;
                 if(end < max) ladders[start] = end;
             }
 
             for(let i=0; i<hazardCount && available.length > 0; i++) {
                 let start = available.pop();
-                let end = start - (Math.floor(Math.random() * 3) + 2);
+                let end = start - (Math.floor(Math.random() * 5) + 3);
                 if(end > 1) snakes[start] = end;
             }
         }
@@ -329,14 +331,15 @@
             const grid = document.getElementById('boardGrid');
             grid.innerHTML = '';
             
-            let cols = Math.round(Math.sqrt(max));
+            // فرض شبكة مربعة تامة ١٠×١٠ عندما يكون العدد ١٠٠، أو الجذر التربيعي للمربعات الكاملة الأخرى
+            let cols = max === 100 ? 10 : Math.round(Math.sqrt(max));
             if (cols < 3) cols = 5;
-            let rows = cols; // شبكة مربعة متساوية الأعمدة والصفوف تماماً
+            let rows = cols; 
             
             grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
             grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
 
-            let fontSize = max > 50 ? '11px' : (max > 30 ? '13px' : '15px');
+            let fontSize = max > 50 ? '9px' : (max > 30 ? '11px' : '14px');
 
             for (let r = rows - 1; r >= 0; r--) {
                 let rowCells = [];
@@ -366,7 +369,7 @@
             setTimeout(drawBoardLines, 50);
         }
 
-        // رسم خطوط خضراء مستقيمة للسلالم وخطوط حمراء متعرجة للأفاعي (جميع الأفاعي باللون الأحمر) مع الشفافية
+        // رسم خطوط خضراء مستقيمة للسلالم وحمراء متعرجة للأفاعي مع الشفافية
         function drawBoardLines() {
             const canvas = document.getElementById('boardCanvas');
             const wrapper = document.querySelector('.board-wrapper');
@@ -375,10 +378,9 @@
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // الحفاظ على الشفافية لتظل الأرقام واضحة
             ctx.globalAlpha = 0.6;
 
-            // 1. رسم خطوط خضراء مستقيمة للسلالم
+            // 1. السلالم (خطوط خضراء مستقيمة)
             for (let start in ladders) {
                 let end = ladders[start];
                 let sEl = document.getElementById(`cell-${start}`);
@@ -390,7 +392,7 @@
                     let y2 = eEl.offsetTop + eEl.offsetHeight / 2;
 
                     ctx.strokeStyle = '#16a34a';
-                    ctx.lineWidth = 4;
+                    ctx.lineWidth = 3.5;
                     ctx.lineCap = 'round';
                     ctx.beginPath();
                     ctx.moveTo(x1, y1);
@@ -399,7 +401,7 @@
                 }
             }
 
-            // 2. رسم خطوط حمراء متعرجة (Zigzag) للأفاعي (جميعها باللون الأحمر)
+            // 2. الأفاعي (خطوط حمراء متعرجة)
             for (let start in snakes) {
                 let end = snakes[start];
                 let sEl = document.getElementById(`cell-${start}`);
@@ -410,8 +412,8 @@
                     let x2 = eEl.offsetLeft + eEl.offsetWidth / 2;
                     let y2 = eEl.offsetTop + eEl.offsetHeight / 2;
 
-                    ctx.strokeStyle = '#dc2626'; // اللون الأحمر الثابت لجميع الأفاعي
-                    ctx.lineWidth = 5;
+                    ctx.strokeStyle = '#dc2626';
+                    ctx.lineWidth = 4;
                     ctx.lineCap = 'round';
                     ctx.lineJoin = 'round';
                     ctx.beginPath();
@@ -420,7 +422,7 @@
                     let dx = x2 - x1;
                     let dy = y2 - y1;
                     let dist = Math.sqrt(dx*dx + dy*dy);
-                    let segments = Math.max(3, Math.floor(dist / 12));
+                    let segments = Math.max(3, Math.floor(dist / 10));
                     let nx = -dy / dist;
                     let ny = dx / dist;
 
@@ -428,7 +430,7 @@
                         let t = i / segments;
                         let mx = x1 + dx * t;
                         let my = y1 + dy * t;
-                        let offset = (i % 2 === 0 ? 1 : -1) * 8;
+                        let offset = (i % 2 === 0 ? 1 : -1) * 6;
                         ctx.lineTo(mx + nx * offset, my + ny * offset);
                     }
                     ctx.lineTo(x2, y2);
@@ -446,7 +448,7 @@
                 token.className = 'player-token';
                 token.textContent = '🏃‍♂️';
                 
-                let cols = window.currentCols || 5;
+                let cols = window.currentCols || 10;
                 let rowIndex = Math.floor((customPos - 1) / cols);
                 if (rowIndex % 2 !== 0) {
                     token.classList.add('face-left');
