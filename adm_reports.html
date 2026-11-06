@@ -33,7 +33,7 @@
         .form-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
         .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 220px; }
         .form-group label { font-size: 13px; font-weight: bold; color: #475569; }
-        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: 'Cairo'; font-size: 13px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: 'Cairo'; font-size: 13px; }
 
         /* تصميم صندوق اختيار الصفوف التفاعلي */
         .sections-picker-box {
@@ -44,15 +44,15 @@
             padding: 12px;
             border-radius: 8px;
             border: 1px solid #cbd5e1;
-            max-height: 120px;
+            max-height: 140px;
             overflow-y: auto;
         }
         .section-chip {
             background: #ffffff;
             border: 1.5px solid #cbd5e1;
-            padding: 6px 12px;
+            padding: 6px 14px;
             border-radius: 6px;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: bold;
             cursor: pointer;
             display: inline-flex;
@@ -60,6 +60,7 @@
             gap: 6px;
             transition: 0.2s;
             user-select: none;
+            color: #334155;
         }
         .section-chip.selected {
             background: var(--primary);
@@ -78,10 +79,10 @@
         .btn-dark:hover { background: #1e293b; }
         .btn-red { background: #d32f2f; }
         .btn-red:hover { background: #b71c1c; }
+        .btn-sm { padding: 5px 12px; font-size: 12px; border-radius: 6px; }
 
         .report-preview-area { background: white; padding: 15px; border-radius: 12px; margin-top: 15px; border: 1px solid #e2e8f0; }
         
-        /* تنسيق الصفحة المطبوعة والاحترافية لمنع أي صفحات فارغة أو تداخل */
         .report-single-page { 
             page-break-after: always; 
             break-after: page; 
@@ -133,7 +134,6 @@
             flex-shrink: 0;
         }
 
-        /* حاوية الجدول لضمان الاحتواء التام بدون اقتطاع الأسماء */
         .table-container {
             flex-grow: 1;
             overflow: hidden;
@@ -148,7 +148,7 @@
 
         .footer-table { width: 100%; border-collapse: collapse; margin-top: auto; border-top: 1.5px solid #cbd5e1 !important; padding-top: 5px; flex-shrink: 0; }
         .footer-table td { border: 1px solid #e2e8f0 !important; padding: 4px; text-align: center; vertical-align: top; width: 20%; background: #fafaf9; border-radius: 4px; }
-        .footer-editable-cell { width: 100%; min-height: 35px; background: transparent; border: none; text-align: center; font-family: 'Cairo'; font-weight: bold; resize: none; outline: none; line-height: 1.2; color: #334155; }
+        .footer-editable-cell { width: 100%; min-height: 45px; background: transparent; border: none; text-align: center; font-family: 'Cairo'; font-weight: bold; resize: none; outline: none; line-height: 1.3; color: #334155; }
 
         .hidden { display: none !important; }
         footer.author-footer { text-align: center; padding: 15px; color: #64748b; font-weight: bold; margin-top: 20px; }
@@ -182,7 +182,6 @@
             <button class="btn btn-red" onclick="logout()">تسجيل الخروج 🚪</button>
         </header>
 
-        <!-- شريط التبويبات الموحد -->
         <div class="nav-tabs" id="navTabs">
             <a href="adm_students.html" class="tab-btn role-admin-sup">👥 بيانات الطلاب</a>
             <a href="adm_teachers.html" class="tab-btn role-admin-sup">👨‍🏫 إدارة المعلمين</a>
@@ -214,25 +213,25 @@
             <div class="form-row">
                 <div class="form-group">
                     <label>نص الترويسة (اليمين):</label>
-                    <textarea id="headerRightText" rows="3" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-family:'Cairo'; font-size:12px;" oninput="saveCloudSettings()">مملكة البحرين
+                    <textarea id="headerRightText" rows="3" oninput="saveCloudSettings()">مملكة البحرين
 وزارة التربية والتعليم
 مدرسة اليرموك الابتدائية للبنين</textarea>
                 </div>
                 <div class="form-group">
                     <label>نص الترويسة (اليسار):</label>
-                    <textarea id="headerLeftText" rows="3" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-family:'Cairo'; font-size:12px;" oninput="saveCloudSettings()">العام الدراسي: 2025-2026
+                    <textarea id="headerLeftText" rows="3" oninput="saveCloudSettings()">العام الدراسي: 2025-2026
 قسم الرياضيات والعلوم</textarea>
                 </div>
             </div>
 
             <div class="form-group" style="margin-top: 10px;">
-                <label>محتوى خانات التذييل الـ 5 الافتراضية:</label>
+                <label>محتوى خانات التذييل الـ 5 الافتراضية (تقبل أكثر من سطر):</label>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 5px;">
-                    <input type="text" id="foot1" placeholder="الخانة 1" oninput="saveCloudSettings()">
-                    <input type="text" id="foot2" placeholder="الخانة 2" oninput="saveCloudSettings()">
-                    <input type="text" id="foot3" placeholder="الخانة 3" oninput="saveCloudSettings()">
-                    <input type="text" id="foot4" placeholder="الخانة 4" oninput="saveCloudSettings()">
-                    <input type="text" id="foot5" placeholder="الخانة 5" oninput="saveCloudSettings()">
+                    <textarea id="foot1" rows="3" placeholder="الخانة 1" oninput="saveCloudSettings()"></textarea>
+                    <textarea id="foot2" rows="3" placeholder="الخانة 2" oninput="saveCloudSettings()"></textarea>
+                    <textarea id="foot3" rows="3" placeholder="الخانة 3" oninput="saveCloudSettings()"></textarea>
+                    <textarea id="foot4" rows="3" placeholder="الخانة 4" oninput="saveCloudSettings()"></textarea>
+                    <textarea id="foot5" rows="3" placeholder="الخانة 5" oninput="saveCloudSettings()"></textarea>
                 </div>
             </div>
         </div>
@@ -251,7 +250,10 @@
                     </select>
                 </div>
                 <div class="form-group" style="flex: 2;">
-                    <label>الفرقة / الشعبة (اضغط للتحديد أو إلغاء التحديد):</label>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label style="margin:0;">الفرقة / الشعبة (اضغط للتحديد أو الإلغاء):</label>
+                        <button type="button" class="btn btn-sm btn-dark" onclick="toggleSelectAllSections()">تحديد / إلغاء الكل</button>
+                    </div>
                     <div id="sectionsPickerBox" class="sections-picker-box"></div>
                 </div>
             </div>
@@ -327,16 +329,17 @@
         let classTeachersAssignments = [];
         let teacherAssignedClassesList = [];
         let selectedSectionsSet = new Set();
+        let currentFilteredSections = [];
 
         let cloudSettings = {
             logo: '',
             headerRight: 'مملكة البحرين\nوزارة التربية والتعليم\nمدرسة اليرموك الابتدائية للبنين',
             headerLeft: 'العام الدراسي: 2025-2026\nقسم الرياضيات والعلوم',
-            foot1: 'إعداد: أ. صادق القلعاوي',
-            foot2: 'منسق القسم: أ. حسين الصيرفي',
-            foot3: 'المدير المساعد: أ. طارق بدوي',
-            foot4: 'المدير المساعد: أ. علي ابراهيم',
-            foot5: 'مدير المدرسة: أ. عدنان الخيراني',
+            foot1: 'إعداد:\nأ. صادق القلعاوي',
+            foot2: 'منسق القسم:\nأ. حسين الصيرفي',
+            foot3: 'المدير المساعد:\nأ. طارق بدوي',
+            foot4: 'المدير المساعد:\nأ. علي ابراهيم',
+            foot5: 'مدير المدرسة:\nأ. عدنان الخيراني',
             fSize: '9px'
         };
 
@@ -498,36 +501,53 @@
             
             let availableSections = isTeacher ? teacherAssignedClassesList : cloudSections;
 
-            let filtered = availableSections;
+            currentFilteredSections = availableSections;
             if (gradeVal !== 'all') {
-                filtered = availableSections.filter(s => s.startsWith(gradeVal));
+                currentFilteredSections = availableSections.filter(s => s.startsWith(gradeVal));
             }
 
-            if (filtered.length === 0) {
+            if (currentFilteredSections.length === 0) {
                 boxEl.innerHTML = '<span style="color:#666; font-size:12px;">لا توجد صفوف متاحة</span>';
                 return;
             }
 
-            // افتراضياً يتم تحديد جميع الصفوف المتاحة عند التحميل أو تغيير المرحلة
-            filtered.forEach(sec => {
+            currentFilteredSections.forEach(sec => {
                 selectedSectionsSet.add(sec);
                 let chip = document.createElement('div');
                 chip.className = 'section-chip selected';
                 chip.setAttribute('data-sec', sec);
-                chip.innerHTML = `✓ الشعبة: ${sec}`;
+                chip.innerHTML = `✓ ${sec}`;
                 
                 chip.onclick = function() {
                     if (selectedSectionsSet.has(sec)) {
                         selectedSectionsSet.delete(sec);
                         chip.classList.remove('selected');
-                        chip.innerHTML = `الشعبة: ${sec}`;
+                        chip.innerHTML = `${sec}`;
                     } else {
                         selectedSectionsSet.add(sec);
                         chip.classList.add('selected');
-                        chip.innerHTML = `✓ الشعبة: ${sec}`;
+                        chip.innerHTML = `✓ ${sec}`;
                     }
                 };
                 boxEl.appendChild(chip);
+            });
+        }
+
+        function toggleSelectAllSections() {
+            const allSelected = currentFilteredSections.every(sec => selectedSectionsSet.has(sec));
+            const chips = document.querySelectorAll('.section-chip');
+
+            chips.forEach(chip => {
+                let sec = chip.getAttribute('data-sec');
+                if (allSelected) {
+                    selectedSectionsSet.delete(sec);
+                    chip.classList.remove('selected');
+                    chip.innerHTML = `${sec}`;
+                } else {
+                    selectedSectionsSet.add(sec);
+                    chip.classList.add('selected');
+                    chip.innerHTML = `✓ ${sec}`;
+                }
             });
         }
 
