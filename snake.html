@@ -259,17 +259,55 @@
             snakePenalty: 50
         };
 
+        // دالة جلب إعدادات الصفوف والجدول من سحابة Supabase
+        let studentMaxTable = 12; // القيمة الافتراضية
+
         async function loadSnakeSettings() {
             try {
-                const { data } = await supabaseClient.from('game_settings').select('value').eq('key', 'snake_game_settings').single();
-                if (data && data.value) {
-                    snakeSettings = { ...snakeSettings, ...data.value };
-                    let stagesVal = data.value.totalStages || data.value.maxSquares || data.value.stages || data.value.squares;
+                // 1. جلب إعدادات اللعبة العامة
+                const { data: settingsData } = await supabaseClient.from('game_settings').select('value').eq('key', 'snake_game_settings').single();
+                if (settingsData && settingsData.value) {
+                    snakeSettings = { ...snakeSettings, ...settingsData.value };
+                    let stagesVal = settingsData.value.totalStages || settingsData.value.maxSquares || settingsData.value.stages || settingsData.value.squares;
                     if (stagesVal) {
                         snakeSettings.maxSquares = parseInt(stagesVal);
                     }
                 }
-            } catch (e) {}
+
+                // 2. جلب أقصى رقم جدول مسموح به لصف الطالب من جدول stage_configs
+                if (studentData && studentData.cls) {
+                    // استخراج رقم الصف من اسم الصف إذا كان نصياً (مثلاً "الصف الخامس" -> 5) أو اعتباره رقماً مباشرة
+                    let clsVal = studentData.cls;
+                    let stageNum = 5; // افتراضي
+                    if (typeof clsVal === 'number') {
+                        stageNum = clsVal;
+                    } else {
+                        let match = String(clsVal).match(/\d+/);
+                        if (match) stageNum = parseInt(match[0]);
+                    }
+
+                    const { data: configData, error } = await supabaseClient
+                        .from('stage_configs')
+                        .select('max_table')
+                        .eq('stage', stageNum)
+                        .single();
+
+                    if (configData && configData.max_table) {
+                        studentMaxTable = parseInt(configData.max_table);
+                    } else {
+                        // محاولة جلب المطابقة بالنص أو الصف الاول إذا لم يوجد تطابق دقيق
+                        const { data: allConfigs } = await supabaseClient.from('stage_configs').select('*');
+                        if (allConfigs && allConfigs.length > 0) {
+                            let found = allConfigs.find(c => String(c.stage) === String(clsVal) || String(c.stage) === String(stageNum));
+                            if (found && found.max_table) {
+                                studentMaxTable = parseInt(found.max_table);
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                console.log("Error loading settings:", e);
+            }
         }
 
         let currentPosition = 1;
@@ -279,7 +317,7 @@
         let currentInput = "";
         let pendingTargetPosition = 1;
         let currentDiceVal = 1;
-        let isProcessingMove = false; // قفل لمنع التداخل وتجميد الاستجابة
+        let isProcessingMove = false;
 
         function renderDiceDots(val) {
             for (let i = 0; i < 9; i++) {
@@ -523,8 +561,10 @@
             document.getElementById('questionCard').classList.remove('hidden');
 
             let isProduct = Math.random() > 0.5;
-            let n1 = Math.floor(Math.random() * 9) + 1;
-            let n2 = Math.floor(Math.random() * 9) + 1;
+            // استخدام studentMaxTable المستخرج من سحابة Supabase بدلاً من التوقف عند 10
+            let limit = studentMaxTable || 12;
+            let n1 = Math.floor(Math.random() * limit) + 1;
+            let n2 = Math.floor(Math.random() * 9) + 1; // الرقم الثاني من 1 إلى 9 أو بحسب الجدول
             let total = n1 * n2;
             let correctAns = 0;
 
@@ -555,7 +595,7 @@
 
                 let opts = [correctAns];
                 while(opts.length < 4) {
-                    let w = correctAns + (Math.floor(Math.random() * 5) - 2);
+                    let w = correctAns + (Math.floor(Math.random() * 7) - 3);
                     if(w > 0 && !opts.includes(w)) opts.push(w);
                 }
                 opts.sort(() => Math.random() - 0.5);
