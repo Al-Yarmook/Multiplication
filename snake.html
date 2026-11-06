@@ -24,13 +24,13 @@
         .hud { display: flex; justify-content: space-around; width: 100%; font-size: 11px; font-weight: bold; background: #f8fafc; padding: 6px 8px; border-radius: 6px; margin-bottom: 8px; border: 1px solid #e2e8f0; }
         .hud span { color: var(--primary); }
 
-        /* تخطيط متجاوب يتكيف تلقائياً بين الموبايل واللابتوب */
         .game-main-layout { display: flex; flex-direction: row; gap: 15px; width: 100%; align-items: center; justify-content: center; }
         @media (max-width: 768px) {
             .game-main-layout { flex-direction: column; gap: 10px; }
         }
 
-        .board-wrapper { position: relative; width: 380px; height: 380px; max-width: 85vw; max-height: 85vw; aspect-ratio: 1 / 1; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        /* لوحة مربعة متطابقة تماماً ١٠×١٠ */
+        .board-wrapper { position: relative; width: 400px; height: 400px; max-width: 85vw; max-height: 85vw; aspect-ratio: 1 / 1; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
         .board-grid { display: grid; gap: 2px; width: 100%; height: 100%; background: #334155; padding: 4px; border-radius: 8px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.3); position: relative; z-index: 2; }
         
         #boardCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
@@ -102,7 +102,7 @@
             <div class="instructions-box">
                 <ul>
                     <li>🎲 <b>رمي النرد:</b> انقر على النرد للتقدم بحركات دقيقة حتى نهاية المراحل.</li>
-                    <li>🪜 <b>السلالم والأفاعي:</b> خطوط خضراء مستقيمة للسلالم وخطوط حمراء متعرجة للأفاعي بشفافية واضحة.</li>
+                    <li>🪜 <b>السلالم والأفاعي:</b> خطوط خضراء مستقيمة للسلالم، وخطوط حمراء متعرجة للأفاعي.</li>
                     <li>⭐ <b>النقاط والوقت:</b> حساب الزمن ومزامنة الترتيب في لوحة الشرف تلقائياً.</li>
                 </ul>
             </div>
@@ -303,10 +303,7 @@
             snakes = {};
             let max = snakeSettings.maxSquares;
             
-            let hazardCount = 5;
-            if (max <= 30) hazardCount = 2;
-            else if (max <= 50) hazardCount = 3;
-            else hazardCount = 5;
+            let hazardCount = max === 100 ? 5 : (max <= 36 ? 2 : 3);
 
             let available = [];
             for(let i=2; i<max-2; i++) available.push(i);
@@ -331,10 +328,10 @@
             const grid = document.getElementById('boardGrid');
             grid.innerHTML = '';
             
-            // فرض شبكة مربعة تامة ١٠×١٠ عندما يكون العدد ١٠٠، أو الجذر التربيعي للمربعات الكاملة الأخرى
+            // ضمان شبكة مربعة متساوية تماماً (مثلاً ١٠×١٠ للمئة مرحلة، أو الجذر التربيعي للمربعات الأخرى)
             let cols = max === 100 ? 10 : Math.round(Math.sqrt(max));
-            if (cols < 3) cols = 5;
-            let rows = cols; 
+            if (cols < 3) cols = 10;
+            let rows = cols; // فرض تساوي الأعمدة والصفوف لتكون مربعة تماماً
             
             grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
             grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
@@ -357,9 +354,8 @@
                     cell.className = 'cell';
                     cell.id = `cell-${i}`;
                     cell.style.fontSize = fontSize;
+                    // خلايا نظيفة تماماً بدون أي رموز مزعجة، فقط رقم المربع
                     let label = toArabicNum(i);
-                    if (ladders[i]) label += ' 🪜';
-                    if (snakes[i]) label += ' 🐍';
                     cell.innerHTML = `<span>${label}</span>`;
                     grid.appendChild(cell);
                 });
@@ -369,7 +365,7 @@
             setTimeout(drawBoardLines, 50);
         }
 
-        // رسم خطوط خضراء مستقيمة للسلالم وحمراء متعرجة للأفاعي مع الشفافية
+        // رسم خطوط خضراء مستقيمة للسلالم وحمراء متعرجة للأفاعي فقط
         function drawBoardLines() {
             const canvas = document.getElementById('boardCanvas');
             const wrapper = document.querySelector('.board-wrapper');
@@ -378,9 +374,9 @@
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            ctx.globalAlpha = 0.6;
+            ctx.globalAlpha = 0.65; // شفافية واضحة تضمن قراءة الأرقام
 
-            // 1. السلالم (خطوط خضراء مستقيمة)
+            // 1. السلالم (خطوط خضراء مستقيمة فقط)
             for (let start in ladders) {
                 let end = ladders[start];
                 let sEl = document.getElementById(`cell-${start}`);
@@ -391,7 +387,7 @@
                     let x2 = eEl.offsetLeft + eEl.offsetWidth / 2;
                     let y2 = eEl.offsetTop + eEl.offsetHeight / 2;
 
-                    ctx.strokeStyle = '#16a34a';
+                    ctx.strokeStyle = '#16a34a'; // أخضر للسلالم
                     ctx.lineWidth = 3.5;
                     ctx.lineCap = 'round';
                     ctx.beginPath();
@@ -401,7 +397,7 @@
                 }
             }
 
-            // 2. الأفاعي (خطوط حمراء متعرجة)
+            // 2. الأفاعي (خطوط حمراء متعرجة Zigzag فقط)
             for (let start in snakes) {
                 let end = snakes[start];
                 let sEl = document.getElementById(`cell-${start}`);
@@ -412,7 +408,7 @@
                     let x2 = eEl.offsetLeft + eEl.offsetWidth / 2;
                     let y2 = eEl.offsetTop + eEl.offsetHeight / 2;
 
-                    ctx.strokeStyle = '#dc2626';
+                    ctx.strokeStyle = '#dc2626'; // أحمر ثابت لجميع الأفاعي
                     ctx.lineWidth = 4;
                     ctx.lineCap = 'round';
                     ctx.lineJoin = 'round';
