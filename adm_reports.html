@@ -67,8 +67,28 @@
             border-color: var(--primary);
         }
 
+        .options-row {
+            display: flex;
+            gap: 20px;
+            background: #f8fafc;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .checkbox-label { 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 8px; 
+            font-size: 13px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            color: #334155;
+            white-space: nowrap; 
+        }
+
         .checkbox-group { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 10px; background: #f8fafc; padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; }
-        .checkbox-label { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
 
         .btn { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; font-family: 'Cairo'; transition: 0.3s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 14px; }
         .btn:hover { background: var(--primary-hover); }
@@ -82,7 +102,6 @@
 
         .report-preview-area { background: white; padding: 15px; border-radius: 12px; margin-top: 15px; border: 1px solid #e2e8f0; }
         
-        /* تنسيق الصفحة لمنع الصفحات الزائدة وضمان احتواء التذييل */
         .report-single-page { 
             page-break-after: always; 
             break-after: page; 
@@ -147,7 +166,6 @@
         .report-table th { background: #f8fafc; color: #0f172a; font-weight: 800; font-size: 9.5px; border-bottom: 2px solid var(--primary); }
         .report-table tr:nth-child(even) { background-color: #fafaf9; }
 
-        /* تذييل بدون إطارات وخانات مرتبة */
         .footer-table { width: 100%; border-collapse: collapse; margin-top: auto; border: none !important; padding-top: 4px; flex-shrink: 0; }
         .footer-table td { border: none !important; padding: 2px; text-align: center; vertical-align: top; width: 20%; background: transparent; }
         .footer-editable-cell { width: 100%; min-height: 40px; background: transparent; border: none; text-align: center; font-family: 'Cairo'; font-weight: bold; resize: none; outline: none; line-height: 1.2; color: #334155; }
@@ -269,9 +287,12 @@
                         <option value="active">الطلاب المتفاعلين فقط</option>
                     </select>
                 </div>
-                <div class="form-group" style="display: flex; flex-direction: row; align-items: center; gap: 20px; margin-top: 20px;">
-                    <label class="checkbox-label"><input type="checkbox" id="showTeacherName" checked> إظهار اسم المعلم</label>
-                    <label class="checkbox-label"><input type="checkbox" id="showReportDate" checked> إظهار تاريخ التقرير</label>
+                <div class="form-group" style="flex: 2;">
+                    <label>خيارات عرض إضافية:</label>
+                    <div class="options-row">
+                        <label class="checkbox-label"><input type="checkbox" id="showTeacherName" checked> إظهار اسم المعلم</label>
+                        <label class="checkbox-label"><input type="checkbox" id="showReportDate" checked> إظهار تاريخ التقرير</label>
+                    </div>
                 </div>
             </div>
 
