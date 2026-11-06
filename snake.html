@@ -36,10 +36,15 @@
         .player-token.face-left { transform: scaleX(-1); }
 
         .dice-section { display: flex; align-items: center; gap: 15px; margin-bottom: 10px; }
-        .dice-box { width: 55px; height: 55px; background: white; border: 3px solid var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 900; color: var(--primary); box-shadow: 0 4px 10px rgba(216,27,96,0.2); cursor: pointer; transition: 0.2s; }
+        
+        /* تصميم النرد بنقاط (Dice Dots) */
+        .dice-box { width: 60px; height: 60px; background: white; border: 3px solid var(--primary); border-radius: 12px; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); padding: 8px; box-shadow: 0 4px 10px rgba(216,27,96,0.2); cursor: pointer; transition: 0.2s; }
         .dice-box.rolling { animation: shake 0.4s infinite; }
         .dice-box.big-overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(2.5); z-index: 150; box-shadow: 0 10px 30px rgba(0,0,0,0.4); background: white; }
         
+        .dice-dot { background-color: var(--primary); border-radius: 50%; width: 8px; height: 8px; align-self: center; justify-self: center; opacity: 0; }
+        .dice-dot.show { opacity: 1; }
+
         @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(-10deg); } 50% { transform: rotate(10deg); } 100% { transform: rotate(0deg); } }
 
         .question-card { background: #ffffff; border: 2px solid var(--primary); padding: 12px; width: 100%; max-width: 420px; text-align: center; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 10px; position: relative; }
@@ -89,8 +94,8 @@
             <h1>🐍 تعليمات لعبة الحية والسلم الرياضية</h1>
             <div class="instructions-box">
                 <ul>
-                    <li>🎲 <b>رمي النرد:</b> انقر على النرد للتحرك، وسيتوسط الشاشة مكبراً ثم يظهر السؤال مع خيارات.</li>
-                    <li>🪜 <b>السلالم والثعابين:</b> امتدادات رسومية دقيقة تربط مربعات الصعود والهبوط المتغيرة في كل جولة!</li>
+                    <li>🎲 <b>رمي النرد:</b> انقر على النرد للتحرك (بنظام النقاط الدقيقة). الوصول للنهاية يتطلب رمية دقيقة بالضبط!</li>
+                    <li>🪜 <b>السلالم والثعابين:</b> تم تصميم رسومات السلالم والثعابين بامتداد واقعي بين الأرقام لمتعة أكبر.</li>
                     <li>⭐ <b>النقاط والوقت:</b> الحساب بالدقائق والثواني، وترتيب النتائج دقيق وموثق تلقائياً.</li>
                 </ul>
             </div>
@@ -115,7 +120,11 @@
         <div id="gamePlayArea" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
             <div class="dice-section" id="diceSection">
                 <div style="font-weight: bold; font-size: 14px; color: #475569;">ارمِ النرد للتحرك:</div>
-                <div class="dice-box" id="diceBox" onclick="rollDice()">🎲</div>
+                <div class="dice-box" id="diceBox" onclick="rollDice()">
+                    <div class="dice-dot" id="d-0"></div><div class="dice-dot" id="d-1"></div><div class="dice-dot" id="d-2"></div>
+                    <div class="dice-dot" id="d-3"></div><div class="dice-dot" id="d-4"></div><div class="dice-dot" id="d-5"></div>
+                    <div class="dice-dot" id="d-6"></div><div class="dice-dot" id="d-7"></div><div class="dice-dot" id="d-8"></div>
+                </div>
             </div>
 
             <!-- كرت الأسئلة -->
@@ -259,12 +268,32 @@
         let pendingTargetPosition = 1;
         let currentDiceVal = 1;
 
+        // تحديث مظهر نقاط النرد حسب الرقم
+        function renderDiceDots(val) {
+            for (let i = 0; i < 9; i++) {
+                document.getElementById(`d-${i}`).classList.remove('show');
+            }
+            // مواقع النقاط في شبكة 3x3
+            const dotMap = {
+                1: [4],
+                2: [2, 6],
+                3: [2, 4, 6],
+                4: [0, 2, 6, 8],
+                5: [0, 2, 4, 6, 8],
+                6: [0, 2, 3, 5, 6, 8]
+            };
+            if (dotMap[val]) {
+                dotMap[val].forEach(idx => {
+                    document.getElementById(`d-${idx}`).classList.add('show');
+                });
+            }
+        }
+
         function generateBoardHazards() {
             ladders = {};
             snakes = {};
             let max = snakeSettings.maxSquares;
             
-            // توزيع نسبي ذكي للسلالم والثعابين حسب عدد المراحل
             let count = max >= 50 ? 5 : 3;
             let available = [];
             for(let i=2; i<max-3; i++) available.push(i);
@@ -293,15 +322,14 @@
             let rows = Math.ceil(max / cols);
             grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
 
-            // بناء الشبكة بنظام متعرج (Boustrophedon): صف يمين لليسار، صف يسار ليمين
             for (let r = rows - 1; r >= 0; r--) {
                 let rowCells = [];
                 for (let c = 0; c < cols; c++) {
                     let cellNum;
                     if (r % 2 === 0) {
-                        cellNum = r * cols + (c + 1); // من اليمين لليسار في الأسطر الفردية (0, 2...)
+                        cellNum = r * cols + (c + 1);
                     } else {
-                        cellNum = r * cols + (cols - c); // من اليسار لليمين في الأسطر الزوجية (1, 3...)
+                        cellNum = r * cols + (cols - c);
                     }
                     if (cellNum <= max) rowCells.push(cellNum);
                 }
@@ -320,6 +348,7 @@
             setTimeout(drawBoardLines, 50);
         }
 
+        // رسم السلالم والثعابين كمسارات ممتدة ومنحنية وليست مجرد خطوط مستقيمة
         function drawBoardLines() {
             const canvas = document.getElementById('boardCanvas');
             const wrapper = document.querySelector('.board-wrapper');
@@ -328,10 +357,7 @@
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            ctx.lineWidth = 4;
-            ctx.lineCap = 'round';
-
-            // رسم السلالم
+            // رسم السلالم (مزدوجة وممتدة)
             for (let start in ladders) {
                 let end = ladders[start];
                 let sEl = document.getElementById(`cell-${start}`);
@@ -343,11 +369,15 @@
                     let y2 = eEl.offsetTop + eEl.offsetHeight / 2;
 
                     ctx.strokeStyle = '#16a34a';
-                    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+                    ctx.lineWidth = 5;
+                    ctx.beginPath(); 
+                    ctx.moveTo(x1, y1); 
+                    ctx.quadraticCurveTo((x1+x2)/2 + 15, (y1+y2)/2, x2, y2); 
+                    ctx.stroke();
                 }
             }
 
-            // رسم الثعابين
+            // رسم الثعابين (متموجة وممتدة بين الأرقام)
             for (let start in snakes) {
                 let end = snakes[start];
                 let sEl = document.getElementById(`cell-${start}`);
@@ -359,7 +389,14 @@
                     let y2 = eEl.offsetTop + eEl.offsetHeight / 2;
 
                     ctx.strokeStyle = '#dc2626';
-                    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+                    ctx.lineWidth = 6;
+                    ctx.beginPath(); 
+                    ctx.moveTo(x1, y1);
+                    // منحنى بيزي متموج ليمثل الثعبان بشكل واقعي
+                    let cpX = (x1 + x2) / 2 - 25;
+                    let cpY = (y1 + y2) / 2 + 25;
+                    ctx.quadraticCurveTo(cpX, cpY, x2, y2);
+                    ctx.stroke();
                 }
             }
         }
@@ -372,11 +409,10 @@
                 token.className = 'player-token';
                 token.textContent = '🏃‍♂️';
                 
-                // تحديد اتجاه وجه اللاعب حسب اتجاه الحركة في الصف (متعرج)
                 let cols = 5;
                 let rowIndex = Math.floor((customPos - 1) / cols);
                 if (rowIndex % 2 !== 0) {
-                    token.classList.add('face-left'); // يواجه اليسار في السطور الزوجية
+                    token.classList.add('face-left');
                 }
                 targetCell.appendChild(token);
             }
@@ -404,6 +440,7 @@
                 document.getElementById('timerVal').textContent = toArabicNum(timeStr);
             }, 1000);
 
+            renderDiceDots(1);
             showDiceSection();
         }
 
@@ -417,21 +454,40 @@
             const diceBox = document.getElementById('diceBox');
             diceBox.classList.add('rolling', 'big-overlay');
 
+            let rollAnimTimer = setInterval(() => {
+                let tempVal = Math.floor(Math.random() * 6) + 1;
+                renderDiceDots(tempVal);
+            }, 80);
+
             setTimeout(() => {
+                clearInterval(rollAnimTimer);
                 diceBox.classList.remove('rolling');
-                currentDiceVal = Math.floor(Math.random() * 3) + 1;
-                diceBox.textContent = toArabicNum(currentDiceVal);
+                
+                // حساب دقيق: رمي نرد عشوائي من 1 إلى 6
+                currentDiceVal = Math.floor(Math.random() * 6) + 1;
+                renderDiceDots(currentDiceVal);
 
                 setTimeout(() => {
                     diceBox.classList.remove('big-overlay');
                     document.getElementById('miniDice').textContent = toArabicNum(currentDiceVal);
-                    pendingTargetPosition = Math.min(snakeSettings.maxSquares, currentPosition + currentDiceVal);
-                    generateMixedQuestion('dice', pendingTargetPosition);
+                    
+                    // شرط الفوز الدقيق في النهاية: لا يفوز إلا إذا طابق العدد المتبقي بالضبط
+                    let maxP = snakeSettings.maxSquares;
+                    let needed = maxP - currentPosition;
+                    
+                    if (currentDiceVal <= needed) {
+                        pendingTargetPosition = currentPosition + currentDiceVal;
+                    } else {
+                        // إذا كان الرقم أكبر من المتبقي، يبقى في مكانه وينتظر رقماً مناسباً
+                        pendingTargetPosition = currentPosition;
+                    }
+
+                    generateMixedQuestion('dice', pendingTargetPosition, currentDiceVal, needed);
                 }, 800);
             }, 600);
         }
 
-        function generateMixedQuestion(contextType, targetPosOrHazard) {
+        function generateMixedQuestion(contextType, targetPosOrHazard, diceRolled, neededSteps) {
             document.getElementById('diceSection').classList.add('hidden');
             document.getElementById('questionCard').classList.remove('hidden');
 
@@ -444,7 +500,12 @@
             if (contextType === 'dice') {
                 document.getElementById('optionsGrid').classList.remove('hidden');
                 document.getElementById('keypadArea').classList.add('hidden');
-                document.getElementById('qTitle').textContent = `سؤال التقدم إلى المربع ${toArabicNum(targetPosOrHazard)}`;
+                
+                if (diceRolled > neededSteps) {
+                    document.getElementById('qTitle').textContent = `⚠️ رُمي (${toArabicNum(diceRolled)}) والمتبقي (${toArabicNum(neededSteps)}). أجب لتثبيت مكانك حتى يظهر رقم مناسب!`;
+                } else {
+                    document.getElementById('qTitle').textContent = `سؤال التقدم إلى المربع ${toArabicNum(targetPosOrHazard)}`;
+                }
 
                 if (isProduct) {
                     correctAns = total;
@@ -459,7 +520,7 @@
                     }
                 }
 
-                currentPuzzle = { answer: correctAns, type: 'dice', target: targetPosOrHazard };
+                currentPuzzle = { answer: correctAns, type: 'dice', target: targetPosOrHazard, dice: diceRolled, needed: neededSteps };
 
                 let opts = [correctAns];
                 while(opts.length < 4) {
@@ -474,7 +535,7 @@
                     const btn = document.createElement('button');
                     btn.className = 'opt-btn';
                     btn.textContent = toArabicNum(o);
-                    btn.onclick = () => checkDiceAnswer(o, correctAns, targetPosOrHazard);
+                    btn.onclick = () => checkDiceAnswer(o, correctAns, targetPosOrHazard, diceRolled, neededSteps);
                     grid.appendChild(btn);
                 });
 
@@ -503,7 +564,6 @@
             }
         }
 
-        // الحركة خطوة بخطوة مع مؤثر صوتي لكل خطوة
         function animatePlayerSteps(fromPos, toPos, callback) {
             let step = fromPos < toPos ? 1 : -1;
             let current = fromPos;
@@ -522,16 +582,20 @@
             nextStep();
         }
 
-        function checkDiceAnswer(selected, correct, targetPos) {
+        function checkDiceAnswer(selected, correct, targetPos, diceRolled, neededSteps) {
             if (selected === correct) {
                 playAudioEffect('correct');
                 confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
                 score += snakeSettings.correctPoints;
                 
-                // الانتقال خطوة بخطوة نحو المربع المستهدف
-                animatePlayerSteps(currentPosition, targetPos, () => {
-                    checkCellHazards();
-                });
+                if (diceRolled > neededSteps) {
+                    alert(`إجابة صحيحة! لكن الرقم الظاهر (${toArabicNum(diceRolled)}) أكبر من المتبقي للنهاية (${toArabicNum(neededSteps)}). انتظر رمية أخرى مطابقة!`);
+                    showDiceSection();
+                } else {
+                    animatePlayerSteps(currentPosition, targetPos, () => {
+                        checkCellHazards();
+                    });
+                }
             } else {
                 playAudioEffect('wrong');
                 score = Math.max(0, score - snakeSettings.wrongPenalty);
@@ -625,7 +689,7 @@
             if (currentPosition >= snakeSettings.maxSquares) {
                 endGameWin();
             } else {
-                showDiceSection();
+                showDiceSession();
             }
         }
 
@@ -647,7 +711,6 @@
                     student_name: studentData.name, cls: studentData.cls, points: score, weekly_points: gameTime
                 }]);
                 
-                // جلب وترتيب نتائج الطلاب لعرضها في الجدول
                 const { data: topScores } = await supabaseClient.from('snake_scores')
                     .select('student_name, points, weekly_points')
                     .order('points', { ascending: false })
