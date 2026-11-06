@@ -102,27 +102,29 @@
 
         .report-preview-area { background: white; padding: 15px; border-radius: 12px; margin-top: 15px; border: 1px solid #e2e8f0; }
         
+        /* تنسيق الصفحات بدقة لمنع أي صفحات فارغة ولضمان ظهور التذييل بكل صفحة */
         .report-single-page { 
-            page-break-after: always; 
-            break-after: page; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: space-between; 
-            height: 92vh;
-            max-height: 92vh;
+            height: 94vh;
+            max-height: 94vh;
             padding: 6px 10px;
             box-sizing: border-box;
-            overflow: hidden;
-            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
             background: #ffffff;
             border: 1px solid #cbd5e1;
             border-radius: 10px;
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+            break-inside: avoid;
+            page-break-after: always;
+            break-after: page;
         }
 
         .report-single-page:last-child {
-            page-break-after: avoid;
-            break-after: avoid;
-            margin-bottom: 0;
+            page-break-after: avoid !important;
+            break-after: avoid !important;
+            margin-bottom: 0 !important;
         }
 
         .report-header-box {
@@ -179,18 +181,20 @@
             header, .section-card:not(#reportOutputCard), .btn-row, .nav-tabs, footer.author-footer, #reportHeaderTitleCard { display: none !important; }
             .report-preview-area { box-shadow: none; padding: 0; margin: 0; border: none; }
             .report-single-page { 
-                page-break-after: always; 
-                break-after: page; 
                 height: 98vh !important; 
                 max-height: 98vh !important;
                 padding: 1px;
-                margin: 0;
+                margin: 0 !important;
                 border: none;
+                page-break-inside: avoid;
+                break-inside: avoid;
+                page-break-after: always;
+                break-after: page;
             }
             .report-single-page:last-child {
-                page-break-after: avoid;
-                break-after: avoid;
-                margin-bottom: 0;
+                page-break-after: avoid !important;
+                break-after: avoid !important;
+                margin-bottom: 0 !important;
             }
         }
     </style>
@@ -383,7 +387,7 @@
 
         function initHeaderTitle() {
             const roleVal = currentUser ? String(currentUser.role || '').trim().toLowerCase() : 'teacher';
-            const roleName = (roleVal === 'admin' || roleVal === 'مدير') ? 'مدير النظام' : (roleVal === 'supervisor' || roleVal === 'مشرف') ? 'مشرف' : 'معلم';
+            const roleName = (roleVal === 'admin' || roleVal === 'مدير') ? 'مدير النظام' : (roleVal === 'supervisor' || roleVal === 'مشرف') ? 'معلم' : 'معلم';
             document.getElementById('welcomeTitle').textContent = `تقارير الأداء الشاملة (${currentUser.name || 'مستخدم'} - ${roleName})`;
         }
 
