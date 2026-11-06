@@ -24,20 +24,17 @@
         .hud { display: flex; justify-content: space-around; width: 100%; font-size: 11px; font-weight: bold; background: #f8fafc; padding: 5px 8px; border-radius: 6px; margin-bottom: 4px; border: 1px solid #e2e8f0; }
         .hud span { color: var(--primary); }
 
-        /* تخطيط جانبي متناسق: اللوحة كاملة وواضحة يميناً، والأسئلة والخيارات مصغرة يساراً */
         .game-main-layout { display: flex; flex-direction: row; gap: 15px; width: 100%; flex: 1; align-items: center; justify-content: center; overflow: hidden; }
 
-        .board-wrapper { position: relative; width: 400px; height: 440px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        .board-wrapper { position: relative; width: 400px; height: 420px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
         .board-grid { display: grid; gap: 2px; width: 100%; height: 100%; background: #334155; padding: 4px; border-radius: 8px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.3); position: relative; z-index: 2; }
         
         #boardCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
 
-        /* أرقام مربعات واضحة وكبيرة ومحتواة بالكامل بدون تمرير */
-        .cell { background: #f8fafc; border-radius: 3px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 13px; font-weight: 900; position: relative; border: 1px solid #cbd5e1; color: #1e293b; }
+        .cell { background: #f8fafc; border-radius: 3px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 900; position: relative; border: 1px solid #cbd5e1; color: #1e293b; }
         .cell.ladder { background: #dcfce7; border-color: #86efac; color: #16a34a; }
         .cell.snake { background: #fee2e2; border-color: #fca5a5; color: #dc2626; }
         
-        /* شخصية اللاعب الواضحة والبارزة */
         .player-token { position: absolute; font-size: 22px; z-index: 10; transition: transform 0.2s ease-in-out, left 0.2s ease-in-out, top 0.2s ease-in-out; }
         .player-token.face-left { transform: scaleX(-1); }
 
@@ -53,7 +50,6 @@
 
         @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(-10deg); } 50% { transform: rotate(10deg); } 100% { transform: rotate(0deg); } }
 
-        /* خيارات مصغرة ومدمجة تماماً */
         .question-card { background: #ffffff; border: 2px solid var(--primary); padding: 6px 10px; width: 100%; text-align: center; border-radius: 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.04); }
         .question-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
         .mini-dice { width: 22px; height: 22px; border: 2px solid var(--primary); border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: var(--primary); background: #fff; }
@@ -102,7 +98,7 @@
             <div class="instructions-box">
                 <ul>
                     <li>🎲 <b>رمي النرد:</b> انقر على النرد للتقدم بحركات دقيقة حتى نهاية المراحل.</li>
-                    <li>🪜 <b>السلالم والثعابين:</b> سلالم رفيعة وثعابين شفافة تتيح رؤية الأرقام بوضوح تام.</li>
+                    <li>🪜 <b>السلالم والأفاعي:</b> خطوط خضراء مستقيمة للسلالم وخطوط حمراء متعرجة للأفاعي بشفافية واضحة.</li>
                     <li>⭐ <b>النقاط والوقت:</b> حساب الزمن ومزامنة الترتيب في لوحة الشرف تلقائياً.</li>
                 </ul>
             </div>
@@ -114,7 +110,7 @@
             <div>البطل: <span id="playerName">بطل</span></div>
             <div>⭐ النقاط: <span id="scoreVal">٠</span></div>
             <div>⏱️ الوقت: <span id="timerVal">٠٠:٠٠</span></div>
-            <div>📍 المربع: <span id="posVal">١</span> / <span id="maxPosVal">٥٠</span></div>
+            <div>📍 المربع: <span id="posVal">١</span> / <span id="maxPosVal">٣٦</span></div>
         </div>
 
         <!-- التخطيط الجانبي الثابت -->
@@ -251,7 +247,7 @@
         }
 
         let snakeSettings = {
-            maxSquares: 50,
+            maxSquares: 36,
             correctPoints: 50,
             wrongPenalty: 20,
             ladderBonus: 100,
@@ -298,13 +294,13 @@
             }
         }
 
-        // توزيع دقيق وسليم حسب المراحل تماماً
+        // توزيع المخاطر بناءً على عدد المراحل بدقة
         function generateBoardHazards() {
             ladders = {};
             snakes = {};
             let max = snakeSettings.maxSquares;
             
-            let hazardCount = 3;
+            let hazardCount = 2;
             if (max <= 30) hazardCount = 2;
             else if (max <= 50) hazardCount = 3;
             else if (max <= 100) hazardCount = 5;
@@ -316,13 +312,13 @@
 
             for(let i=0; i<hazardCount && available.length > 0; i++) {
                 let start = available.pop();
-                let end = start + Math.floor(Math.random() * 5) + 3;
+                let end = start + Math.floor(Math.random() * 4) + 3;
                 if(end < max) ladders[start] = end;
             }
 
             for(let i=0; i<hazardCount && available.length > 0; i++) {
                 let start = available.pop();
-                let end = start - (Math.floor(Math.random() * 4) + 2);
+                let end = start - (Math.floor(Math.random() * 3) + 2);
                 if(end > 1) snakes[start] = end;
             }
         }
@@ -333,10 +329,16 @@
             const grid = document.getElementById('boardGrid');
             grid.innerHTML = '';
             
-            let cols = 5;
+            // حساب جذري لضمان شبكة مربعة كاملة (مثل 5x5, 6x6, 7x7...)
+            let cols = Math.round(Math.sqrt(max));
+            if (cols < 3) cols = 5;
             let rows = Math.ceil(max / cols);
+            
             grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
             grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+
+            // ضبط حجم خط الأرقام بناءً على عدد المربعات لتتلاءم تلقائياً
+            let fontSize = max > 50 ? '11px' : (max > 30 ? '13px' : '15px');
 
             for (let r = rows - 1; r >= 0; r--) {
                 let rowCells = [];
@@ -353,6 +355,7 @@
                     const cell = document.createElement('div');
                     cell.className = 'cell';
                     cell.id = `cell-${i}`;
+                    cell.style.fontSize = fontSize;
                     let label = toArabicNum(i);
                     if (ladders[i]) label += ' 🪜';
                     if (snakes[i]) label += ' 🐍';
@@ -360,11 +363,12 @@
                     grid.appendChild(cell);
                 });
             }
+            window.currentCols = cols;
             updatePlayerToken();
             setTimeout(drawBoardLines, 50);
         }
 
-        // رسم خطوط دقيقة وشفافة بالكامل بدون تمرير وبإحداثيات ثابتة
+        // رسم خطوط خضراء مستقيمة للسلالم وخطوط حمراء متعرجة للأفاعي مع الحفاظ على الشفافية
         function drawBoardLines() {
             const canvas = document.getElementById('boardCanvas');
             const wrapper = document.querySelector('.board-wrapper');
@@ -373,9 +377,10 @@
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            ctx.globalAlpha = 0.55;
+            // الحفاظ على الشفافية لتظل الأرقام واضحة
+            ctx.globalAlpha = 0.6;
 
-            // 1. رسم السلالم الرفيعة والمتناسقة
+            // 1. رسم خطوط خضراء مستقيمة للسلالم
             for (let start in ladders) {
                 let end = ladders[start];
                 let sEl = document.getElementById(`cell-${start}`);
@@ -390,28 +395,13 @@
                     ctx.lineWidth = 4;
                     ctx.lineCap = 'round';
                     ctx.beginPath();
-                    ctx.moveTo(x1 - 4, y1); ctx.lineTo(x2 - 4, y2);
-                    ctx.moveTo(x1 + 4, y1); ctx.lineTo(x2 + 4, y2);
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
                     ctx.stroke();
-
-                    ctx.lineWidth = 2;
-                    let stepsCount = 4;
-                    for (let s = 1; s < stepsCount; s++) {
-                        let t = s / stepsCount;
-                        let mx = x1 + (x2 - x1) * t;
-                        let my = y1 + (y2 - y1) * t;
-                        ctx.beginPath();
-                        ctx.moveTo(mx - 5, my);
-                        ctx.lineTo(mx + 5, my);
-                        ctx.stroke();
-                    }
                 }
             }
 
-            // 2. رسم الثعابين الرفيعة والشفافة
-            let snakeColors = ['#16a34a', '#ca8a04', '#ea580c', '#0284c7'];
-            let colorIndex = 0;
-
+            // 2. رسم خطوط حمراء متعرجة (Zigzag) للأفاعي
             for (let start in snakes) {
                 let end = snakes[start];
                 let sEl = document.getElementById(`cell-${start}`);
@@ -422,25 +412,29 @@
                     let x2 = eEl.offsetLeft + eEl.offsetWidth / 2;
                     let y2 = eEl.offsetTop + eEl.offsetHeight / 2;
 
-                    let snakeColor = snakeColors[colorIndex % snakeColors.length];
-                    colorIndex++;
-
-                    ctx.strokeStyle = snakeColor;
-                    ctx.lineWidth = 6;
+                    ctx.strokeStyle = '#dc2626';
+                    ctx.lineWidth = 5;
                     ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
                     ctx.beginPath();
                     ctx.moveTo(x1, y1);
-                    let cpX1 = (x1 + x2) / 2 + 20;
-                    let cpY1 = (y1 + y2) / 2 - 15;
-                    let cpX2 = (x1 + x2) / 2 - 20;
-                    let cpY2 = (y1 + y2) / 2 + 15;
-                    ctx.bezierCurveTo(cpX1, cpY1, cpX2, cpY2, x2, y2);
-                    ctx.stroke();
 
-                    ctx.fillStyle = snakeColor;
-                    ctx.beginPath();
-                    ctx.arc(x1, y1, 7, 0, Math.PI * 2);
-                    ctx.fill();
+                    let dx = x2 - x1;
+                    let dy = y2 - y1;
+                    let dist = Math.sqrt(dx*dx + dy*dy);
+                    let segments = Math.max(3, Math.floor(dist / 12));
+                    let nx = -dy / dist;
+                    let ny = dx / dist;
+
+                    for (let i = 1; i < segments; i++) {
+                        let t = i / segments;
+                        let mx = x1 + dx * t;
+                        let my = y1 + dy * t;
+                        let offset = (i % 2 === 0 ? 1 : -1) * 8;
+                        ctx.lineTo(mx + nx * offset, my + ny * offset);
+                    }
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
                 }
             }
             ctx.globalAlpha = 1.0;
@@ -454,7 +448,7 @@
                 token.className = 'player-token';
                 token.textContent = '🏃‍♂️';
                 
-                let cols = 5;
+                let cols = window.currentCols || 5;
                 let rowIndex = Math.floor((customPos - 1) / cols);
                 if (rowIndex % 2 !== 0) {
                     token.classList.add('face-left');
